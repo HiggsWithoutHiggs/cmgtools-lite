@@ -1,3 +1,4 @@
+#include "CommonTools/MVAUtils/interface/TMVAZipReader.h"
 #include <tuple>
 #include <vector>
 #include <string>
@@ -7,13 +8,11 @@
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include <DataFormats/Math/interface/deltaR.h>
 #include "TMVA/Reader.h"
-#include "CommonTools/Utils/interface/TMVAZipReader.h"
 #include <iostream>
 #include "TStopwatch.h"
 #include "TMath.h"
 #include <algorithm>
 
-#include "HadTopKinFit.cc" // providing the HadTopKinFit class
 
 enum BDT_EventReco_algoType {
   k_BDTv8_Hj = 0,
@@ -41,8 +40,8 @@ class BDT_EventReco_Jet : public eObj {
     _csv = -0.2;
     _qgl = -0.2;
   };
-  BDT_EventReco_Jet(float pt,float eta, float phi, float mass, float csv, float deepcsv, float cvsl, float cvsb, float ptD, float axis1, int mult, float qgl): eObj(pt,eta,phi,mass),
-    _deepcsv(deepcsv), _cvsl(cvsl), _cvsb(cvsb), _ptD(ptD), _axis1(std::exp(-axis1)), _mult(mult) {
+  BDT_EventReco_Jet(float pt,float eta, float phi, float mass, float csv, float deepcsv, float deepjet, float cvsl, float cvsb, float ptD, float axis1, int mult, float qgl): eObj(pt,eta,phi,mass),
+																					      _deepcsv(deepcsv), _deepjet(deepjet), _cvsl(cvsl), _cvsb(cvsb), _ptD(ptD), _axis1(std::exp(-axis1)), _mult(mult) {
   // pass axis1 = -log(sqrt(...)), training uses definition of axis1 without -log
     _csv = std::max(float(-0.1),csv);
     _qgl = std::max(float(-0.1),qgl);
@@ -50,6 +49,7 @@ class BDT_EventReco_Jet : public eObj {
   ~BDT_EventReco_Jet(){};
   float csv() const {return _csv;}
   float deepcsv() const {return _deepcsv;}
+  float deepjet() const {return _deepjet;}
   float cvsl() const {return _cvsl;}
   float cvsb() const {return _cvsb;}
   float ptD() const {return _ptD;}
@@ -60,6 +60,7 @@ class BDT_EventReco_Jet : public eObj {
  private:
   float _csv;
   float _deepcsv = 0;
+  float _deepjet = 0;
   float _cvsl = 0;
   float _cvsb = 0;
   float _ptD = 0;
@@ -157,12 +158,12 @@ class BDT_EventReco_EventP4Cache {
 
 class BDT_EventReco {
  public: 
-  BDT_EventReco(std::string weight_file_name_bloose, std::string weight_file_name_btight, std::string weight_file_name_Hj, bool hj2017, std::string weight_file_name_Hjj, std::string weight_file_name_rTT, std::string weight_file_name_httTT, std::string kinfit_file_name_httTT, BDT_EventReco_algoType _algo, float csv_looseWP, float csv_mediumWP);
+  BDT_EventReco(std::string weight_file_name_bloose, std::string weight_file_name_btight, std::string weight_file_name_Hj, bool hj2017, bool hjlegacy, std::string weight_file_name_Hjj, std::string weight_file_name_rTT, std::string weight_file_name_httTT, std::string kinfit_file_name_httTT, BDT_EventReco_algoType _algo, float csv_looseWP, float csv_mediumWP);
   ~BDT_EventReco(){
     clear();
   };
-  void addJet(float pt,float eta, float phi, float mass, float csv, float deepcsv, float cvsl, float cvsb, float ptD, float axis1, int mult, float qgl){
-    jets.push_back(std::make_shared<eJet>(pt,eta,phi,mass,csv,deepcsv,cvsl,cvsb,ptD,axis1,mult,qgl));
+  void addJet(float pt,float eta, float phi, float mass, float csv, float deepcsv, float deepjet, float cvsl, float cvsb, float ptD, float axis1, int mult, float qgl){
+    jets.push_back(std::make_shared<eJet>(pt,eta,phi,mass,csv,deepcsv, deepjet,cvsl,cvsb,ptD,axis1,mult,qgl));
     if (csv>csv_medium_working_point) nBMedium+=1;
   };
   void addLep(float pt,float eta, float phi, float mass){
@@ -175,7 +176,7 @@ class BDT_EventReco {
   std::vector<float> CalcrTT(char* _x);
   float EvalScore(eTopP top);
   float EvalScore_httTT(eTopP top);
-  std::tuple<float,float> EvalKinFit(eTopP top);
+  // std::tuple<float,float> EvalKinFit(eTopP top);
 
   void setDebug(bool val){debug = val;};
 
@@ -253,15 +254,25 @@ class BDT_EventReco {
   float var_b_wcand_deltaR = -99;
   float var_topcand_mass = -99;
 
-  float var_httTT_CSV_b;
-  float var_httTT_qg_Wj2;
-  float var_httTT_pT_bWj1Wj2;
-  float var_httTT_pT_Wj2;
-  float var_httTT_m_Wj1Wj2;
-  float var_httTT_nllKinFit;
-  float var_httTT_pT_b_o_kinFit_pT_b;
-
-  HadTopKinFit *httTT_kinfitWorker = nullptr;
+  float var_httTT_btagDisc_b             = -99;   
+  float var_httTT_btagDisc_Wj1 		 = -99;
+  float var_httTT_btagDisc_Wj2		 = -99;
+  float var_httTT_qg_Wj1   		 = -99;
+  float var_httTT_qg_Wj2        	 = -99;
+  float var_httTT_m_bWj1Wj2   		 = -99;
+  float var_httTT_m_Wj1Wj2_div_m_bWj1Wj2 = -99;
+  float var_httTT_pT_Wj1Wj2		 = -99;
+  float var_httTT_dR_Wj1Wj2		 = -99;
+  float var_httTT_dR_bW			 = -99;
+  float var_httTT_m_bWj1    		 = -99;
+  float var_httTT_m_bWj2    		 = -99;
+  float var_httTT_mass_Wj1		 = -99;
+  float var_httTT_pT_Wj2	         = -99;
+  float var_httTT_mass_Wj2		 = -99;
+  float var_httTT_pT_b			 = -99;
+  float var_httTT_mass_b                 = -99;   
+ 
+  //HadTopKinFit *httTT_kinfitWorker = nullptr;
   ptvec httTT_kinfit_recBJet;
   ptvec httTT_kinfit_recWJet1;
   ptvec httTT_kinfit_recWJet2;
@@ -286,14 +297,16 @@ class BDT_EventReco {
   float csv_loose_working_point = -1;
   float csv_medium_working_point = -1;
   bool hj2017training = false;
+  bool hjLegacyTraining = false;
 };
 
-BDT_EventReco::BDT_EventReco(std::string weight_file_name_bloose, std::string weight_file_name_btight, std::string weight_file_name_Hj, bool hj2017, std::string weight_file_name_Hjj, std::string weight_file_name_rTT, std::string weight_file_name_httTT, std::string kinfit_file_name_httTT, BDT_EventReco_algoType _algo, float csv_looseWP, float csv_mediumWP){
+BDT_EventReco::BDT_EventReco(std::string weight_file_name_bloose, std::string weight_file_name_btight, std::string weight_file_name_Hj, bool hj2017, bool hjlegacy, std::string weight_file_name_Hjj, std::string weight_file_name_rTT, std::string weight_file_name_httTT, std::string kinfit_file_name_httTT, BDT_EventReco_algoType _algo, float csv_looseWP, float csv_mediumWP){
 
   algo = _algo;
   csv_loose_working_point = csv_looseWP;
   csv_medium_working_point = csv_mediumWP;
   hj2017training = hj2017;
+  hjLegacyTraining = hjlegacy;
 
   if (algo==k_BDTv8_Hj) {
 
@@ -316,7 +329,14 @@ BDT_EventReco::BDT_EventReco(std::string weight_file_name_bloose, std::string we
   }
 
   TMVAReader_Hj_ = std::make_shared<TMVA::Reader>( "!Color:!Silent" );
-  if (hj2017training) {
+  if (hjLegacyTraining) {
+      TMVAReader_Hj_->AddVariable( "Jet25_bDiscriminator", &iv1_2);
+      TMVAReader_Hj_->AddVariable( "Jet25_pt", &iv1_5);
+      TMVAReader_Hj_->AddVariable( "Jet25_lepdrmin", &iv1_1);
+      TMVAReader_Hj_->AddVariable( "Jet25_lepdrmax", &iv1_4);
+      TMVAReader_Hj_->AddVariable( "Jet25_qg", &iv1_3);
+  }
+  else if (hj2017training) {
       TMVAReader_Hj_->AddVariable( "Jet25_lepdrmin", &iv1_1);
       TMVAReader_Hj_->AddVariable( "max(Jet25_bDiscriminator,0.)", &iv1_2);
       TMVAReader_Hj_->AddVariable( "max(Jet25_qg,0.)", &iv1_3);
@@ -388,17 +408,28 @@ BDT_EventReco::BDT_EventReco(std::string weight_file_name_bloose, std::string we
 
     TMVAReader_httTT_ = std::make_shared<TMVA::Reader>( "!Color:!Silent" );
 
-    TMVAReader_httTT_->AddVariable("CSV_b",&var_httTT_CSV_b);
-    TMVAReader_httTT_->AddVariable("qg_Wj2",&var_httTT_qg_Wj2);
-    TMVAReader_httTT_->AddVariable("pT_bWj1Wj2",&var_httTT_pT_bWj1Wj2);
-    TMVAReader_httTT_->AddVariable("m_Wj1Wj2",&var_httTT_m_Wj1Wj2);
-    TMVAReader_httTT_->AddVariable("nllKinFit",&var_httTT_nllKinFit);
-    TMVAReader_httTT_->AddVariable("pT_b_o_kinFit_pT_b",&var_httTT_pT_b_o_kinFit_pT_b);
-    TMVAReader_httTT_->AddVariable("pT_Wj2",&var_httTT_pT_Wj2);
+    TMVAReader_httTT_->AddVariable("btagDisc_b",            &var_httTT_btagDisc_b            );	
+    TMVAReader_httTT_->AddVariable("btagDisc_Wj1",	  &var_httTT_btagDisc_Wj1 	   );	
+    TMVAReader_httTT_->AddVariable("btagDisc_Wj2",	  &var_httTT_btagDisc_Wj2	   );	
+    TMVAReader_httTT_->AddVariable("qg_Wj1",		  &var_httTT_qg_Wj1   		   );
+    TMVAReader_httTT_->AddVariable("qg_Wj2",		  &var_httTT_qg_Wj2        	   );
+    TMVAReader_httTT_->AddVariable("m_Wj1Wj2_div_m_bWj1Wj2", &var_httTT_m_Wj1Wj2_div_m_bWj1Wj2);
+    TMVAReader_httTT_->AddVariable("pT_Wj1Wj2",		  &var_httTT_pT_Wj1Wj2		   );
+    TMVAReader_httTT_->AddVariable("dR_Wj1Wj2",		  &var_httTT_dR_Wj1Wj2		   );
+    TMVAReader_httTT_->AddVariable("m_bWj1Wj2",		  &var_httTT_m_bWj1Wj2   	   );	
+    TMVAReader_httTT_->AddVariable("dR_bW",		  &var_httTT_dR_bW		   );	
+    TMVAReader_httTT_->AddVariable("m_bWj1",		  &var_httTT_m_bWj1    		   );
+    TMVAReader_httTT_->AddVariable("m_bWj2",		  &var_httTT_m_bWj2    		   );
+    TMVAReader_httTT_->AddVariable("mass_Wj1",		  &var_httTT_mass_Wj1		   );
+    TMVAReader_httTT_->AddVariable("pT_Wj2",		  &var_httTT_pT_Wj2	           );
+    TMVAReader_httTT_->AddVariable("mass_Wj2",		  &var_httTT_mass_Wj2		   );
+    TMVAReader_httTT_->AddVariable("pT_b",		  &var_httTT_pT_b		   );	
+    TMVAReader_httTT_->AddVariable("mass_b",		  &var_httTT_mass_b                );
 
+  
     reco::details::loadTMVAWeights(TMVAReader_httTT_.get(),"BDT",weight_file_name_httTT);
 
-    httTT_kinfitWorker = new HadTopKinFit(1,kinfit_file_name_httTT);
+    // httTT_kinfitWorker = new HadTopKinFit(1,kinfit_file_name_httTT);
 
   }
 
@@ -473,13 +504,23 @@ void BDT_EventReco::clear(){
   var_b_wcand_deltaR = -99;
   var_topcand_mass = -99;
 
-  var_httTT_CSV_b = -99;
-  var_httTT_qg_Wj2 = -99;
-  var_httTT_pT_bWj1Wj2 = -99;
-  var_httTT_pT_Wj2 = -99;
-  var_httTT_m_Wj1Wj2 = -99;
-  var_httTT_nllKinFit = -99;
-  var_httTT_pT_b_o_kinFit_pT_b = -99;
+  var_httTT_btagDisc_b             = -99;   
+  var_httTT_btagDisc_Wj1 	   = -99;	  
+  var_httTT_btagDisc_Wj2	   = -99;	  
+  var_httTT_qg_Wj1   		   = -99;	  
+  var_httTT_qg_Wj2                 = -99;	  
+  var_httTT_m_bWj1Wj2   	   = -99;	  
+  var_httTT_m_Wj1Wj2_div_m_bWj1Wj2 = -99;	  
+  var_httTT_pT_Wj1Wj2		   = -99;	  
+  var_httTT_dR_Wj1Wj2		   = -99;	  
+  var_httTT_dR_bW		   = -99;	  
+  var_httTT_m_bWj1    		   = -99;	  
+  var_httTT_m_bWj2    		   = -99;	  
+  var_httTT_mass_Wj1		   = -99;	  
+  var_httTT_pT_Wj2	           = -99;	  
+  var_httTT_mass_Wj2		   = -99;	  
+  var_httTT_pT_b		   = -99;	  
+  var_httTT_mass_b                 = -99;   
 
   nBMedium = 0;
 
@@ -773,32 +814,49 @@ float BDT_EventReco::EvalScore(eTopP top){
 float BDT_EventReco::EvalScore_httTT(eTopP top){
 
   if (top->hasScore_httTT) return top->score_httTT;
+  var_httTT_btagDisc_b = top->b->deepcsv();
+  var_httTT_btagDisc_Wj1 = top->j2->deepcsv();
+  var_httTT_btagDisc_Wj2 = top->j3->deepcsv();
+  var_httTT_qg_Wj1  = top->j2->qgl();   		 
+  var_httTT_qg_Wj2  = top->j3->qgl();       	 
+  var_httTT_m_bWj1Wj2 = (*(top->b->p4())+*(top->j2->p4())+*(top->j3->p4())).mass();
+  var_httTT_m_Wj1Wj2_div_m_bWj1Wj2  = (*(top->j2->p4())+*(top->j3->p4())).mass()/var_httTT_m_bWj1Wj2;
+  var_httTT_pT_Wj1Wj2 = (*(top->j2->p4())+*(top->j3->p4())).pt();		 
+  var_httTT_dR_Wj1Wj2 = dR(top->j2.get(),top->j3.get());
+  auto sum =  *(top->j2->p4())+ *(top->j3->p4());
+  var_httTT_dR_bW     = dR(top->b.get(),&sum);
+  var_httTT_m_bWj1 = (*(top->b->p4())+*(top->j2->p4())).mass();     		 
+  var_httTT_m_bWj2 = (*(top->b->p4())+*(top->j3->p4())).mass();     		     		 
+  var_httTT_mass_Wj1 = top->j2->mass();
+  var_httTT_pT_Wj2   = top->j3->pt();
+  var_httTT_mass_Wj2 = top->j3->mass();
+  var_httTT_pT_b     = top->b->pt();		 
+  var_httTT_mass_b   = top->b->mass();		                 
 
-  var_httTT_CSV_b = top->b->deepcsv();
-  var_httTT_qg_Wj2 = top->j3->qgl();
-  var_httTT_pT_bWj1Wj2 = (*(top->b->p4())+*(top->j2->p4())+*(top->j3->p4())).pt();
-  var_httTT_pT_Wj2 = top->j3->pt();
-  var_httTT_m_Wj1Wj2 = (*(top->j2->p4())+*(top->j3->p4())).mass();
-  auto kf = EvalKinFit(top);
-  var_httTT_nllKinFit = std::get<0>(kf);
-  if (std::get<1>(kf)!=0) var_httTT_pT_b_o_kinFit_pT_b = top->b->pt()/std::get<1>(kf);
-  else {
-    if (debug) std::cout << "ERROR: kinematic fit returned fitted b pt == 0. Will set var_httTT_pT_b_o_kinFit_pT_b to infinity." << std::endl;
-    var_httTT_pT_b_o_kinFit_pT_b = TMath::Infinity();
-  }
+
 
   float score = TMVAReader_httTT_->EvaluateMVA("BDT");
-
+  score = 1. / (1. + std::sqrt((1. - score) / (1. + score)));
   if (debug) {
     std::cout << "httTT tagger on jets " << top->j1idx << " " << top->j2idx << " " << top->j3idx << std::endl;
 
-    std::cout << "var_httTT_CSV_b: " << var_httTT_CSV_b << std::endl;
-    std::cout << "var_httTT_qg_Wj2: " << var_httTT_qg_Wj2 << std::endl;
-    std::cout << "var_httTT_pT_bWj1Wj2: " << var_httTT_pT_bWj1Wj2 << std::endl;
-    std::cout << "var_httTT_pT_Wj2: " << var_httTT_pT_Wj2 << std::endl;
-    std::cout << "var_httTT_m_Wj1Wj2: " << var_httTT_m_Wj1Wj2 << std::endl;
-    std::cout << "var_httTT_nllKinFit: " << var_httTT_nllKinFit << std::endl;
-    std::cout << "var_httTT_pT_b_o_kinFit_pT_b: " << var_httTT_pT_b_o_kinFit_pT_b << std::endl;
+    std::cout << "var_httTT_btagDisc_b            :" << var_httTT_btagDisc_b               << std::endl;    
+    std::cout << "var_httTT_btagDisc_Wj1 	  :" << var_httTT_btagDisc_Wj1   	  << std::endl;
+    std::cout << "var_httTT_btagDisc_Wj2	  :" << var_httTT_btagDisc_Wj2	          << std::endl;
+    std::cout << "var_httTT_qg_Wj1   		  :" << var_httTT_qg_Wj1   	          << std::endl;
+    std::cout << "var_httTT_qg_Wj2                :" << var_httTT_qg_Wj2                   << std::endl;
+    std::cout << "var_httTT_m_bWj1Wj2   	  :" << var_httTT_m_bWj1Wj2   	          << std::endl;
+    std::cout << "var_httTT_m_Wj1Wj2_div_m_bWj1Wj2:" << var_httTT_m_Wj1Wj2_div_m_bWj1Wj2   << std::endl;
+    std::cout << "var_httTT_pT_Wj1Wj2		  :" << var_httTT_pT_Wj1Wj2		  << std::endl;
+    std::cout << "var_httTT_dR_Wj1Wj2		  :" << var_httTT_dR_Wj1Wj2		  << std::endl;
+    std::cout << "var_httTT_dR_bW		  :" << var_httTT_dR_bW  		  << std::endl;
+    std::cout << "var_httTT_m_bWj1    		  :" << var_httTT_m_bWj1    		  << std::endl;
+    std::cout << "var_httTT_m_bWj2    		  :" << var_httTT_m_bWj2    		  << std::endl;
+    std::cout << "var_httTT_mass_Wj1		  :" << var_httTT_mass_Wj1		  << std::endl;
+    std::cout << "var_httTT_pT_Wj2	          :" << var_httTT_pT_Wj2	                  << std::endl;
+    std::cout << "var_httTT_mass_Wj2		  :" << var_httTT_mass_Wj2		  << std::endl;
+    std::cout << "var_httTT_pT_b		  :" << var_httTT_pT_b		          << std::endl;
+    std::cout << "var_httTT_mass_b                :" << var_httTT_mass_b                   << std::endl;
     std::cout << "score: " << score << std::endl;
 
   }
@@ -809,13 +867,13 @@ float BDT_EventReco::EvalScore_httTT(eTopP top){
 
 };
 
-std::tuple<float,float> BDT_EventReco::EvalKinFit(eTopP top){
-  httTT_kinfit_recBJet = *(top->b);
-  httTT_kinfit_recWJet1 = *(top->j2);
-  httTT_kinfit_recWJet2 = *(top->j3);
-  httTT_kinfitWorker->fit(httTT_kinfit_recBJet,httTT_kinfit_recWJet1,httTT_kinfit_recWJet2);
-  return std::make_tuple(float(httTT_kinfitWorker->nll()),float(httTT_kinfitWorker->fittedBJet().Pt()));
-};
+// std::tuple<float,float> BDT_EventReco::EvalKinFit(eTopP top){
+//   httTT_kinfit_recBJet = *(top->b);
+//   httTT_kinfit_recWJet1 = *(top->j2);
+//   httTT_kinfit_recWJet2 = *(top->j3);
+//   //httTT_kinfitWorker->fit(httTT_kinfit_recBJet,httTT_kinfit_recWJet1,httTT_kinfit_recWJet2);
+//   return std::make_tuple(float(httTT_kinfitWorker->nll()),float(httTT_kinfitWorker->fittedBJet().Pt()));
+// };
 
 
 std::vector<float> BDT_EventReco::CalcHadTopTagger(char* _permlep, char* _x){
@@ -946,14 +1004,15 @@ std::vector<float> BDT_EventReco::CalcHjTagger(char* _permlep, char* _x, std::ve
 	
       float dr_lep0 = dR(lep_fromTop.get(),jet_fromHiggs->p4());
       float dr_lep1 = dR(lep_fromHig.get(),jet_fromHiggs->p4());
-	
+
       iv1_1 = std::min(dr_lep0,dr_lep1);
-      iv1_2 = std::max(hj2017training ? jet_fromHiggs->deepcsv() : jet_fromHiggs->csv(),float(0));
+      iv1_2 = std::max(hjLegacyTraining ? jet_fromHiggs->deepjet() : (hj2017training ? jet_fromHiggs->deepcsv() : jet_fromHiggs->csv()) ,float(0));
       iv1_3 = std::max(jet_fromHiggs->qgl(),float(0));
       iv1_4 = std::max(dr_lep0,dr_lep1);
       iv1_5 = jet_fromHiggs->Pt();
 	
       Hj_value[i] = TMVAReader_Hj_->EvaluateMVA("BDTG method");
+      Hj_value[i] = 1. / (1. + std::sqrt((1. - Hj_value[i]) / (1. + Hj_value[i])));
 	
     }
 

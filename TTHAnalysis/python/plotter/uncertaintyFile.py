@@ -3,13 +3,14 @@ from math import *
 import re
 import os, os.path
 from array import array
-from copy import *
+from copy import deepcopy
 
 from CMGTools.TTHAnalysis.plotter.fakeRate import *
 
 class Uncertainty:
     def __init__(self,name,procmatch,binmatch,unc_type,more_args=None,extra=None,options=None):
         self.name = name
+        self._options = options
         self._procpattern = procmatch
         self._binpattern = binmatch
         self._procmatch = re.compile(procmatch+'$')
@@ -25,6 +26,7 @@ class Uncertainty:
         self.normUnc=[None,None]
         self._postProcess = None
         self._nontrivialSelectionChange = False
+        self._year = None
         lnU_byname = name.endswith("_lnU")
         lnU_byextra = extra != None and ('lnU' in extra) and bool(extra['lnU'])
         if lnU_byname != lnU_byextra: raise RuntimeError("Inconsistent declaration of %s: is it a lnU or not? by name %r, by options %r" % (name,lnU_byname,lnU_byextra))
@@ -36,7 +38,7 @@ class Uncertainty:
             if 'FakeRates' in self.extra:
                 self._nontrivialSelectionChange = True
                 for idx in xrange(2):
-                    self.fakerate[idx] = FakeRate(self.extra['FakeRates'][idx],loadFilesNow=False)
+                    self.fakerate[idx] = FakeRate(self.extra['FakeRates'][idx],loadFilesNow=False,year=self._options.year)
             if 'AddWeights' in self.extra:
                 for idx in xrange(2):
                     self.fakerate[idx]._weight = '(%s)*(%s)'%(self.fakerate[idx]._weight,self.extra['AddWeights'][idx])
@@ -47,7 +49,7 @@ class Uncertainty:
             self.trivialFunc[1] = 'symmetrize_up_to_dn'
             if 'FakeRate' in self.extra:
                 self._nontrivialSelectionChange = True
-                self.fakerate[0] = FakeRate(self.extra['FakeRate'],loadFilesNow=False)
+                self.fakerate[0] = FakeRate(self.extra['FakeRate'],loadFilesNow=False,year=self._options.year)
             if 'AddWeight' in self.extra:
                 self.fakerate[0]._weight = '(%s)*(%s)'%(self.fakerate[0]._weight,self.extra['AddWeight'])
             if 'FakeRate' not in self.extra and 'AddWeight' not in self.extra:
@@ -76,6 +78,8 @@ class Uncertainty:
                 self._postProcess = "Normalize"
         if 'DoesNotChangeEventSelection' in self.extra and self.extra['DoesNotChangeEventSelection']:
             self._nontrivialSelectionChange = False
+        if 'year' in self.extra: 
+            self._year = self.extra['year']
     def isDummy(self):
         return  self.unc_type == 'none'
     def isTrivial(self,sign):
@@ -132,6 +136,8 @@ class Uncertainty:
         return self._binmatch
     def unc_type(self):
         return self.unc_type
+    def year(self):
+        return self._year
     def getFR(self,sign):
         FR = self.fakerate[0 if sign=='up' else 1]
         if FR: FR.loadFiles()
@@ -148,6 +154,7 @@ class UncertaintyFile:
         elif isinstance(txtfileOrUncertainty,UncertaintyFile):
             self._uncertainty = deepcopy(txtfileOrUncertainty.uncertainty())
         else:
+            self._options = options
             self._uncertainty = []
             file = open(txtfileOrUncertainty, "r")
             if not file: raise RuntimeError, "Cannot open "+txtfileOrUncertainty+"\n"
@@ -194,7 +201,7 @@ class UncertaintyFile:
                     if skipme: continue
                 (name, procmatch, binmatch, unc_type) = field[:4]
                 more_args = field[4:]
-                self._uncertainty.append(Uncertainty(name,procmatch,binmatch,unc_type,more_args,extra))
+                self._uncertainty.append(Uncertainty(name,procmatch,binmatch,unc_type,more_args,extra,options=self._options))
 
               except ValueError, e:
                 print "Error parsing cut line [%s]" % line.strip()
@@ -209,3 +216,4 @@ class UncertaintyFile:
     def add(self,uncertainty):
         if uncertainty.name in [u.name for u in self._uncertainty]: raise RuntimeError, 'Uncertainty with name %s is already present' % uncertainty.name
         self._uncertainty.append(uncertainty)
+ 

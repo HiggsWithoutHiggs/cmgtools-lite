@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #from mcAnalysis import *
 from CMGTools.TTHAnalysis.plotter.mcEfficiencies import *
-import itertools
+import itertools, sys, os
+from math import sqrt, hypot, log
 
 def _h1NormWithError(h,normSyst):
     y = h.Integral()
@@ -35,7 +36,6 @@ def addStretchBands(hwn,amplitude,fineSlices=100,namePattern="{name}_stretch", n
     ytot = ref.Integral()
     if (ytot == 0): return 
     ax = ref.GetXaxis() 
-    xmin, xmax = ax.GetXmin(), ax.GetXmax()
     hi = ref.Clone(); hi.SetDirectory(None)
     lo = ref.Clone(); lo.SetDirectory(None)
     hi.Reset(); lo.Reset()
@@ -186,7 +186,7 @@ if __name__ == "__main__":
                 for (p,h) in report.iteritems():
                     if gnorms[p]['pre'] != gnorms[p]['post'] and gnorms[p]['post'] > 0:
                         h.Scale(gnorms[p]['post']/gnorms[p]['pre'])
-            if options.algo == "fitGlobalSimND":
+            if options.algo in ("fitGlobalSimND", "fitGlobalSemiParND"):
                 w = ROOT.RooWorkspace("w")
                 ROOT.gSystem.Load("libHiggsAnalysisCombinedLimit")
                 print "factory(", "num[%s]" % (",".join(["bin%d_%s"%(ix,z) for ix in xrange(1,projection.GetNbinsX()+1) for z in ("pass","fail")])), ")"
@@ -376,10 +376,10 @@ if __name__ == "__main__":
                                           df, df)
                     # == restore settings ===
                     options.yrange = ybackup; options.showRatio = rbackup; options.xcut = xcbackup
-                elif options.algo in ("fitSimND", "fitGlobalSimND"):
-                    if options.algo == "fitGlobalSimND":
+                elif options.algo in ("fitSimND", "fitSemiParND","fitGlobalSimND","fitGlobalSemiParND"):
+                    if options.algo in ( "fitGlobalSimND", "fitGlobalSemiParND" ):
                         xprefix = "bin%d_" % ix
-                    elif options.algo == "fitSimND":
+                    elif options.algo in ("fitSimND","fitSemiParND"):
                         xprefix = ""
                         w = ROOT.RooWorkspace("w")
                         ROOT.gSystem.Load("libHiggsAnalysisCombinedLimit")
@@ -387,6 +387,7 @@ if __name__ == "__main__":
                     reportND = {}
                     nuis = {}
                     for k,o in ('sig',options.shapeSystSig),('bkg',options.shapeSystBkg):
+                        if k == 'sig' and 'SemiPar' in options.algo: continue
                         nuis[k] = [ (f[:1],float(f[2:])) for f in o.split(",") ]
                     Ndata = sum(freport_num_den[i]["data"].Integral() for i in ("pass", "fail"))
                     Newk  = sum(freport_num_den[i][p].Integral() for i in ("pass", "fail") for p in mca.listBackgrounds() if p in freport_num_den[i])
@@ -430,10 +431,17 @@ if __name__ == "__main__":
                                     print "WARNING, bin %d filled in data (%d/%d) and not in MC" % ( b, rep["data"].GetBinContent(b), Ndata )
                                     rep["data"].SetBinContent(b, 0) 
                                     rep["data"].SetBinError(b, 0) 
-                        sighwn = HistoWithNuisances(rep["signal"]); sighwn.SetName("signal_"+xprefix+zstate)
+                        if 'SemiPar' in options.algo:
+                            dfail = freport_num_den["fail"]["data"].Clone("signal_"+xprefix+zstate); dfail.SetDirectory(None)
+                            dfail.Scale((Nqcd*((1-fqcd) if zstate == "fail" else fqcd))/dfail.Integral())
+                            sighwn = ParametricHistoWN(dfail, nuisancePrefixName="signal_"+xprefix) # force same name, to correlate bins across pass and fail
+                            sighwn.SetName("signal_"+xprefix+zstate)
+                        else:
+                            sighwn = HistoWithNuisances(rep["signal"]); sighwn.SetName("signal_"+xprefix+zstate)
                         bkghwn = HistoWithNuisances(rep["background"]); bkghwn.SetName("background_"+xprefix+zstate)
                         # make systematic histograms
                         for what,hwn in [('sig',sighwn),('bkg',bkghwn)]:
+                            if what == 'sig' and 'SemiPar' in options.algo: continue
                             for n,val in nuis[what]:
                                 if n == "l": addPolySystBands(hwn, val, 1, norm=True, namePattern="nuis_%s%s_shape"%(xprefix+what,n))
                                 if n == "q": addPolySystBands(hwn, val, 2, norm=True, namePattern="nuis_%s%s_shape"%(xprefix+what,n))
@@ -446,6 +454,7 @@ if __name__ == "__main__":
                         # make summary plots of templates
                         lsig = mca.listSignals()[0]; lbkg = mca.listBackgrounds()[0]
                         for what,label,hwn in [('sig',lsig,sighwn),('bkg',lbkg,bkghwn)]:
+                            if what == 'sig' and 'SemiPar' in options.algo: continue
                             shiftrep = {label: hwn.getCentral()}
                             for n,v in nuis[what]:
                                 if n == 'b': continue
@@ -454,26 +463,26 @@ if __name__ == "__main__":
                             for p,h in shiftrep.iteritems(): mca.stylePlot(p, h, fspec)
                             plotter.printOnePlot(mca, fspec, shiftrep, extraProcesses = [l for l in shiftrep.keys() if l != label], plotmode="norm", printDir=bindirname, 
                                              outputName = "%s_for_%s%s_%s_%s_%sSyst" % (fspec.name,xspec.name,bxname,yspec.name,zstate,what))
-                    if options.algo == "fitSimND" or roofit == None:
+                    if options.algo in ("fitSimND","fitSemiParND") or roofit == None:
                         roofit = roofitizeReport(reportND, workspace=w, xvarName="f")
                     else:
                         roofitizeReport(reportND, context=roofit, xvarName="f")
                     for what,wlong in ('sig','signal'),('bkg','background'):
                         for zstate in "pass", "fail":
                             reportND[wlong+"_"+zstate].addRooFitScaleFactor(w.function("%s_%s_sf" % (xprefix+what,zstate)))
-                    if options.algo == "fitSimND" or combiner == None:
+                    if options.algo in ("fitSimND","fitSemiParND") or combiner == None:
                         combiner = ROOT.CombDataSetFactory(ROOT.RooArgSet(roofit.xvar), w.cat("num"))
                     for zstate in "pass", "fail":
                         rdh = ROOT.RooDataHist("data_"+xprefix+zstate,"data",ROOT.RooArgList(roofit.xvar), roofit.hist2roofit(freport_num_den[zstate]["data"]))
                         combiner.addSetAny(xprefix+zstate,rdh)
-                        if options.algo == "fitGlobalSimND": 
+                        if options.algo in ( "fitGlobalSimND", "fitGlobalSemiParND" ): 
                             globalDataHists[xprefix+zstate] = rdh # prevent early deletion
                         sigpdf, signorm = reportND["signal_"    +zstate].rooFitPdfAndNorm()
                         bkgpdf, bkgnorm = reportND["background_"+zstate].rooFitPdfAndNorm()
                         roofit.imp(sigpdf, ROOT.RooFit.RecycleConflictNodes(), ROOT.RooFit.Silence())
                         roofit.imp(bkgpdf, ROOT.RooFit.RecycleConflictNodes(), ROOT.RooFit.Silence())
                         w.factory('SUM::all_{1}{0}({1}Nsig_{0} * signal_{1}{0}_pdf, {1}Nbkg_{0} * background_{1}{0}_pdf)'.format(zstate,xprefix))
-                    if options.algo == "fitGlobalSimND":
+                    if options.algo in ( "fitGlobalSimND", "fitGlobalSemiParND" ):
                         for k,v in reportND.iteritems():
                             globalReportND[(ix,k)] = v
                         for zstate in "pass","fail":
@@ -520,6 +529,7 @@ if __name__ == "__main__":
                     # pre and post-fit plots
                     lsig = mca.listSignals()[0]; lbkg = mca.listBackgrounds()[0]
                     for dopost,postlabel in (True,'postfit'), (False,'prefit'):
+                        if postlabel == 'prefit' and 'SemiPar' in options.algo: continue
                         for k,h in reportND.iteritems():
                             if h.Integral() > 0: 
                                 h.setPostFitInfo(postfit if dopost else prefit, dopost)
@@ -572,7 +582,7 @@ if __name__ == "__main__":
                     print "MC fake rate: %.4f " % fqcd
                     print "Data fake rate: %.4f +- %.4f " % (f0, df)
             # now, outside of the loop on the x bins
-            if options.algo == "fitGlobalSimND":
+            if options.algo in ( "fitGlobalSimND", "fitGlobalSemiParND" ):
                 data = combiner.doneUnbinned("data","data")
                 sim  = ROOT.RooSimultaneousOpt("all", "", w.cat("num"))
                 goodxs = []
@@ -587,6 +597,9 @@ if __name__ == "__main__":
                     sim.addExtraConstraint(c)
                     nuisanceList.add(w.var(nuisance))
                 for what, amount in options.regularize:
+                    if what in ("sf_sig", "sf_bkg"):
+                        what = what.replace("sf_","theta_")
+                        amount = log(1+float(amount))/log(options.kappaSig if "sig" in what else options.kappaBkg)
                     for iix, ix2 in enumerate(goodxs[1:]): 
                         ix1 = goodxs[iix]
                         w1 = "bin%s_%s"%(ix1,what)
@@ -601,6 +614,18 @@ if __name__ == "__main__":
                             what, iix, w1, w2, amount));
                         print "Constraining %s - %s to %s" % (w1, w2, amount)
                         sim.addExtraConstraint(c)
+                for theta in "theta_sig", "theta_bkg":
+                    if theta in options.constrain: 
+                        for ix in goodxs:
+                            c = roofit.factory("SimpleGaussianConstraint::bin%s_%sConstrainerPdf(bin%s_%s,%s,%s)" (
+                                ix, theta, ix, theta, 0, 1))
+                            sim.addExtraConstraint(c)
+                if "fbkg" in options.constrain:
+                    for ix in goodxs:
+                        c = roofit.factory("SimpleGaussianConstraint::bin%s_%sConstrainerPdf(bin%s_%s,%s,%s)" % (
+                            ix, "fbkg", ix, "fbkg", globalFbkg[ix], options.sigmaFBkg))
+                        sim.addExtraConstraint(c)
+                        print "Added background fake rate constraint bin%s at %s" % (ix, globalFbkg[ix])
                 for ix in xrange(1,projection.GetNbinsX()+1):
                     if not w.pdf("all_bin%d_pass" % ix): continue
                 cmdArgs = ROOT.RooLinkedList()
@@ -629,6 +654,7 @@ if __name__ == "__main__":
                 # pre and post-fit plots
                 lsig = mca.listSignals()[0]; lbkg = mca.listBackgrounds()[0]
                 for dopost,postlabel in (True,'postfit'), (False,'prefit'):
+                    if postlabel == 'prefit' and 'SemiPar' in options.algo: continue
                     for k,h in globalReportND.iteritems():
                         if ("data" not in k[1]) and (h.Integral() > 0): 
                             h.setPostFitInfo(postfit if dopost else prefit, dopost)
@@ -644,6 +670,9 @@ if __name__ == "__main__":
                             plotter.printOnePlot(mca, fspec, pfrep, printDir=bindirname, 
                                                  outputName = "%s_for_%s%s_%s_%s_%s" % (fspec.name,xspec.name,bxname,yspec.name,zstate,postlabel)) 
                 # minos for the efficiency
+                print " Bin edges   |    Fake rate (Signal)       |     Prompt rate (Bkg.)  "
+                print " low high    |  MC FR     Data fit  Err    |   MC PR    Data fit  Err  "
+                print "%-5s %-5s  |  %-6s   %-6s    %-6s  |  %-6s   %-6s    %-6s" % ( " ---", " ---", " ----", " ----", " ----", " ----", " ----", " ----")
                 for ix in goodxs: 
                     w.allVars().assignValueOnly(result.floatParsFinal())
                     var = w.var("bin%d_fsig" % ix); var.setConstant(True)
@@ -687,9 +716,11 @@ if __name__ == "__main__":
                                           -projection.GetXaxis().GetBinLowEdge(ix) + xval,
                                           +projection.GetXaxis().GetBinUpEdge(ix)  - xval, 
                                           df, df)
-                    print "bin %g %g" % (projection.GetXaxis().GetBinLowEdge(ix),projection.GetXaxis().GetBinUpEdge(ix))
-                    print "     MC fake rate: %.4f " % globalFqcd[ix]
-                    print "     Data fake rate: %.4f +- %.4f " % (f0, df)
+                    fr_bkg_fit = result.floatParsFinal().find("bin%d_fbkg" % ix)
+                    print "%5.1f %5.1f  |  %.4f   %.4f +- %.4f  |  %.4f   %.4f +- %.4f" % (
+                            projection.GetXaxis().GetBinLowEdge(ix),projection.GetXaxis().GetBinUpEdge(ix),
+                            globalFqcd[ix], f0, df,
+                            globalFbkg[ix], fr_bkg_fit.getVal(), fr_bkg_fit.getError())
                     var.setConstant(False)
         #print "\n"*5,"===== ALL BINS DONE ===== "
         for rep in xzreport, xzreport0: 
@@ -708,7 +739,7 @@ if __name__ == "__main__":
         else:    ereport = dict([(title, effFromH2D(hist,options, uncertainties="PF")) for (title, hist) in xzreport.iteritems()])
         if options.algo in ("fQCD","ifQCD"):
             ereport["data_fqcd"] = fr_fit
-        elif options.algo in ("fitSimND","fitGlobalSimND"):
+        elif options.algo in ("fitSimND","fitSemiParND","fitGlobalSimND","fitGlobalSemiParND"):
             ereport["data_fit"] = fr_fit
         for p,g in ereport.iteritems(): 
             print "%-30s: %s" % (p,g) 
