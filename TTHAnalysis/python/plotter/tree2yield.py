@@ -16,7 +16,7 @@ ROOT.gSystem.Load("libpng") # otherwise we may end up with a bogus version
 
 import copy
 
-from CMGTools.TTHAnalysis.plotter.cutsFile import *
+from CMGTools.TTHAnalysis.plotter.cutsFile import CutsFile
 from CMGTools.TTHAnalysis.plotter.mcCorrections import *
 from CMGTools.TTHAnalysis.plotter.fakeRate import *
 from CMGTools.TTHAnalysis.plotter.uncertaintyFile import *
@@ -168,7 +168,7 @@ class TreeToYield:
             for cfile in settings['MCCorrections'].split(','): 
                 self._mcCorrSourceList.append( (cfile,MCCorrections(cfile)) )            
         if 'FakeRate' in settings:
-            self._FRSourceList.append( (settings['FakeRate'], FakeRate(settings['FakeRate'],self._options.lumi) ) )
+            self._FRSourceList.append( (settings['FakeRate'], FakeRate(settings['FakeRate'],float(self._options.lumi),year=self._options.year) ) )
         for macro in self._options.loadMacro:
             libname = macro.replace(".cc","_cc.so").replace(".cxx","_cxx.so")
             if libname not in ROOT.gSystem.GetLibraries():
@@ -269,6 +269,8 @@ class TreeToYield:
         return self._cname
     def fname(self):
         return self._fname
+    def basepath(self):
+        return self._basepath
     def hasOption(self,name):
         return (name in self._settings)
     def getOption(self,name,default=None):
@@ -287,7 +289,7 @@ class TreeToYield:
         _mcCorrList = mcCorrList if mcCorrList != None else self._mcCorrs
         ret = self.adaptDataMCExpr(expr)
         for mcc in _mcCorrList:
-            ret = mcc(ret,self._name,self._cname,cut,self._isdata)
+            ret = mcc(ret,self._name,self._cname,cut,self._isdata, self._options.year)
         return ret
     def _init(self):
         if "root://" in self._fname:
@@ -306,6 +308,17 @@ class TreeToYield:
         #self._tree.SetCacheSize(10*1000*1000)
         if "root://" in self._fname: self._tree.SetCacheSize()
         self._friends = []
+        for tf_tree, tf_filename in self._listFriendTrees():
+            tf = self._tree.AddFriend(tf_tree, tf_filename),
+            self._friends.append(tf)
+        self._isInit = True
+    def _close(self):
+        self._isInit = False
+        self._tree = None
+        self._friends = []
+        if self._tfile: self._tfile.Close()
+        self._tfile = None
+    def _listFriendTrees(self):
         friendOpts = self._options.friendTrees[:]
         friendOpts += (self._options.friendTreesData if self._isdata else self._options.friendTreesMC)
         if 'Friends' in self._settings: friendOpts += self._settings['Friends']
@@ -316,17 +329,21 @@ class TreeToYield:
             friendOpts += [ ('Friends', d+"/{cname}_Friend.root") for d in friendSimpleOpts]
         else:
             friendOpts += [ ('sf/t', d+"/evVarFriend_{cname}.root") for d in friendSimpleOpts]
-        for tf_tree,tf_file in friendOpts:
-            tf_filename = tf_file.format(name=self._name, cname=self._cname, P=self._basepath)
-            tf = self._tree.AddFriend(tf_tree, tf_filename),
-            self._friends.append(tf)
-        self._isInit = True
-    def _close(self):
-        self._tree = None
-        self._friends = []
-        self._tfile.Close()
-        self._tfile = None
-        self._isInit = False
+        return [ (tname,fname.format(name=self._name, cname=self._cname, P=self._basepath)) for (tname,fname) in friendOpts ]
+    def checkFriendTrees(self, checkFiles=False):
+        ok = True
+        for (tn,fn) in self._listFriendTrees():
+            if not os.path.exists(fn): 
+                print "Missing friend for %s %s: %s" % (self._name, self._cname, fn)
+                ok = False
+            elif checkFiles:
+                tftest = ROOT.TFile.Open(fn)
+                ftree  = tftest.Get(tn)
+                if not ftree:
+                    print "Missing friend for %s %s: %s [ tree %s not found ]" % (self._name, self._cname, fn)
+                    ok = False
+                tftest.Close()
+        return ok
     def getTree(self,treeName=None):
         if not self._isInit: self._init()
         if treeName is None:
@@ -469,6 +486,7 @@ class TreeToYield:
         return stylePlot(plot,spec,self.getOption)
     def getPlot(self,plotspec,cut,fsplit=None,closeTreeAfter=False,noUncertainties=False):
         if self._isVariation == None and noUncertainties == False:
+            _wasclosed = not self._isInit
             nominal = self.getPlot(plotspec,cut,fsplit=fsplit,closeTreeAfter=False,noUncertainties=True)
             ret = HistoWithNuisances( nominal )
             variations = {}
@@ -485,7 +503,7 @@ class TreeToYield:
                 var.postProcess(nominal, up, down)
                 ret.addVariation(var.name, "up",   up)
                 ret.addVariation(var.name, "down", down)
-            if closeTreeAfter: self._close()
+            if closeTreeAfter and _wasclosed: self._close()
             return ret
         ret = self.getPlotRaw(plotspec.name, plotspec.expr, plotspec.bins, cut, plotspec, fsplit=fsplit, closeTreeAfter=closeTreeAfter)
         # fold overflow
@@ -524,7 +542,7 @@ class TreeToYield:
     def getWeightForCut(self,cut):
         if self._weight:
             if self._isdata: cut = "(%s)     *(%s)*(%s)" % (self._weightString,                    self._scaleFactor, self.adaptExpr(cut,cut=True))
-            else:            cut = "(%s)*(%s)*(%s)*(%s)" % (self._weightString,self._options.lumi, self._scaleFactor, self.adaptExpr(cut,cut=True))
+            else:            cut = "(%s)*(%s)*(%s)*(%s)" % (self._weightString,float(self._options.lumi), self._scaleFactor, self.adaptExpr(cut,cut=True))
         else:
             cut = self.adaptExpr(cut,cut=True)
         if self._weightStringAll != "1":
@@ -613,7 +631,7 @@ class TreeToYield:
         if not self._isInit: self._init()
         if self._weight:
             if self._isdata: cut = "(%s)     *(%s)*(%s)" % (self._weightString,                    self._scaleFactor, self.adaptExpr(cut,cut=True))
-            else:            cut = "(%s)*(%s)*(%s)*(%s)" % (self._weightString,self._options.lumi, self._scaleFactor, self.adaptExpr(cut,cut=True))
+            else:            cut = "(%s)*(%s)*(%s)*(%s)" % (self._weightString,float(self._options.lumi), self._scaleFactor, self.adaptExpr(cut,cut=True))
         else: cut = self.adaptExpr(cut,cut=True)
         if self._options.doS2V: cut  = scalarToVector(cut)
         if self._weightStringAll != "1": cut = "(%s)*(%s)" % (self._weightStringAll, cut)
@@ -665,7 +683,7 @@ def _treeSum(tree,expr):
     return histo.GetBinContent(1)
 
 def addTreeToYieldOptions(parser):
-    parser.add_option("-l", "--lumi",           dest="lumi",   type="float", default="19.7", help="Luminosity (in 1/fb)");
+    parser.add_option("-l", "--lumi",           dest="lumi",   type="string", default="19.7", help="Luminosity (in 1/fb)");
     parser.add_option("-u", "--unweight",       dest="weight",       action="store_false", default=True, help="Don't use weights (in MC events), note weights are still used if a fake rate file is given");
     parser.add_option("--uf", "--unweight-forced",  dest="forceunweight", action="store_true", default=False, help="Do not use weight even if a fake rate file is given.");
     parser.add_option("-W", "--weightString",   dest="weightString", type="string", default="1", help="Use weight (in MC events)");

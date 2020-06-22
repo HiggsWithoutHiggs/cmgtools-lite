@@ -27,11 +27,12 @@ def addMCEfficiencyOptions(parser):
     parser.add_option("--legendWidth", dest="legendWidth", type="float", default=0.35, help="Width of the legend")
     parser.add_option("--compare", dest="compare", default="", help="Samples to compare (by default, all except the totals)")
     parser.add_option("--showRatio", dest="showRatio", action="store_true", default=False, help="Add a data/sim ratio plot at the bottom")
+    parser.add_option("--shiftPoints", dest="shiftPoints", type="float", default=0, help="Shift x coordinates of points by this fraction of the error bar in thew plot to make them more visible when stacking.")
     parser.add_option("--rr", "--ratioRange", dest="ratioRange", type="float", nargs=2, default=(-1,-1), help="Min and max for the ratio")
     parser.add_option("--normEffUncToLumi", dest="normEffUncToLumi", action="store_true", default=False, help="Normalize the dataset to the given lumi for the uncertainties on the calculated efficiency")
 
 
-def doLegend(rocs,options,textSize=0.035):
+def doLegend(rocs,options,textSize=0.035,header=None):
         lwidth = options.legendWidth
         if options.legend == "TR":
             (x1,y1,x2,y2) = (.93-lwidth, .98 - 1.2*textSize*max(len(rocs),3), .93, .98)
@@ -44,6 +45,7 @@ def doLegend(rocs,options,textSize=0.035):
         leg.SetShadowColor(0)
         leg.SetTextFont(42)
         leg.SetTextSize(textSize)
+        if header: leg.SetHeader(header.replace("\#", "#"))       
         for key,val in rocs:
             leg.AddEntry(val, key, "LP")
         leg.Draw()
@@ -106,7 +108,26 @@ def dumpEffFromH2D(h2d,xbin):
     ret += "\t%s" % getattr(h2d, '_cname', '<nil>')
     return ret
 
-def stackEffs(outname,x,effs,options):
+
+def shiftEffsX(effs, amount=0.4):
+    ng = len(effs)
+    if ng <= 1 or amount == 0: return effs
+    shiftedEffs = []
+    for ig, (k,g) in enumerate(effs):
+        gc = g.Clone()
+        delta = 2*ig/float(ng-1) - 1 # -1 for first, +1 for last
+        for i in xrange(g.GetN()):
+            x0 = g.GetX()[i]
+            dxm = g.GetErrorXlow(i)
+            dxp = g.GetErrorXhigh(i)
+            xnew = x0 + amount * delta * ( dxm if delta <= 0 else dxp )
+            gc.SetPoint(i, xnew, g.GetY()[i])
+            gc.SetPointError(i, xnew-(x0-dxm), (x0+dxp)-xnew, g.GetErrorYlow(i), g.GetErrorYhigh(i))
+        g._shifted = gc
+        shiftedEffs.append((k,gc))
+    return shiftedEffs
+
+def stackEffs(outname,x,effs,options,legHeader=None):
     if effs[0][1].ClassName() == "TProfile2D": 
         return stackInXYSlices(outname,x,effs,options)
     if effs[0][1].ClassName() != "TGraphAsymmErrors": 
@@ -158,7 +179,8 @@ def stackEffs(outname,x,effs,options):
     p1.SetLogy(options.logy)
 
     frame.Draw()
-    for title, eff in effs: eff.Draw("P0 SAME")
+    for title, eff in shiftEffsX(effs,options.shiftPoints): 
+        eff.Draw("P0 SAME")
 
     if options.xrange:
         frame.GetXaxis().SetRangeUser(options.xrange[0], options.xrange[1])
@@ -169,7 +191,7 @@ def stackEffs(outname,x,effs,options):
     for x in options.xlines:
         liner.DrawLine(x, frame.GetYaxis().GetXmin(), x, frame.GetYaxis().GetXmax())
 
-    leg = doLegend(effs,options,textSize=options.fontsize)
+    leg = doLegend(effs,options,textSize=options.fontsize,header=legHeader)
     if doRatio:
         p2.cd()
         keepme = doEffRatio(x,effs,frame,options)
@@ -276,7 +298,7 @@ def doEffRatio(x,effs,frame,options):
     line.SetLineColor(effs[0][1].GetLineColor());
     line.DrawLine(cframe.GetXaxis().GetXmin(),1,cframe.GetXaxis().GetXmax(),1)
     unity.Draw("E2 SAME");
-    for ratio in effrels[1:]:
+    for _, ratio in shiftEffsX([(None,r) for r in effrels[1:]], options.shiftPoints): 
         ratio.Draw("P0Z SAME");
 
     liner = ROOT.TLine(); liner.SetLineStyle(2)

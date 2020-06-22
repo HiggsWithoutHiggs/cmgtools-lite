@@ -134,6 +134,7 @@ def haddNano(odir, idirs, firstTime=True):
             haddNano(odir+"_sub%d" % len(newlist), sublist, firstTime=False)
             newlist.append(odir+"_sub%d.root" % len(newlist))
         haddNano(odir, newlist, firstTime=False)
+        for newlistitem in newlist: os.remove(newlistitem)
         return
 
     try:
@@ -158,7 +159,7 @@ def haddChunks(idir, removeDestDir, cleanUp=False, ignoreDirs=None, maxSize=None
         isdir = os.path.isdir(filepath)
         # print filepath
         if isdir or (nanoAOD and filepath.endswith(".root")):
-            compdir = file if isdir else file.rstrip(".root")
+            compdir = file if isdir else file[:-len(".root")]
             try:
                 prefix,num = compdir.rsplit('_Chunk',1)
             except ValueError:

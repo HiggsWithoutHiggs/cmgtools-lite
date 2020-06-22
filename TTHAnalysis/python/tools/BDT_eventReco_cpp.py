@@ -1,30 +1,40 @@
-from CMGTools.TTHAnalysis.treeReAnalyzer import *
+from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module 
+from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection as NanoAODCollection
+from CMGTools.TTHAnalysis.tools.nanoAOD.friendVariableProducerTools import declareOutput, writeOutput
+from CMGTools.TTHAnalysis.treeReAnalyzer import Collection as CMGCollection
+ 
 from CMGTools.TTHAnalysis.tools.mvaTool import *
 import itertools
 import copy
 import math
 import os
 
-class BDT_eventReco: # has to run on a recleaner with label _Recl
-    def __init__(self, weightfile_bloose, weightfile_btight, weightfile_hj, weightfile_hjj, weightfile_rTT, weightfile_httTT, kinfitfile_httTT, algostring, csv_looseWP, csv_mediumWP, recllabel='Recl', selection = []):
+class BDT_eventReco(Module): # has to run on a recleaner with label _Recl
+    def __init__(self, weightfile_bloose, weightfile_btight, weightfile_hj, weightfile_hjj, weightfile_rTT, weightfile_httTT, kinfitfile_httTT, algostring, csv_looseWP, csv_mediumWP, recllabel='Recl', selection = [], variations=[]):
 
         self.inputlabel = '_'+recllabel
-        self.systsJEC = {0:"", 1:"_jecUp", -1:"_jecDown"}
+        self.systsJEC = {0:"", 1:"_jesTotalCorrUp", -1:"_jesTotalCorrDown", 2:"_jesTotalUnCorrUp", -2:"_jesTotalUnCorrDown", 3 : 'jerUp', -3:'jerDown'}
+        if len(variations):
+            self.systsJEC = {0:""}
+            for i,var in enumerate(variations):
+                self.systsJEC[i+1]   ="_%sUp"%var
+                self.systsJEC[-(i+1)]="_%sDown"%var
         self.selection = selection
 
-        if "/libCommonToolsUtils.so" not in ROOT.gSystem.GetLibraries():
-            ROOT.gSystem.Load("libCommonToolsUtils")
+        if "/libCommonToolsMVAUtils.so" not in ROOT.gSystem.GetLibraries():
+            ROOT.gSystem.Load("libCommonToolsMVAUtils")
 
         if "/BDT_eventReco_C.so" not in ROOT.gSystem.GetLibraries():
-            if "/libCommonToolsUtils.so" not in ROOT.gSystem.GetLibraries(): raise RuntimeError
-            ROOT.gSystem.AddIncludePath(" -I/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/gsl/2.2.1/include ")
-            ROOT.gSystem.AddLinkedLibs(" -L/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/gsl/2.2.1/lib -lgsl -lgslcblas -lm ");
+            if "/libCommonToolsMVAUtils.so" not in ROOT.gSystem.GetLibraries(): raise RuntimeError
+            ROOT.gSystem.AddIncludePath(" -I/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/gsl/2.2.1-omkpbe2/include ")
+            ROOT.gSystem.AddLinkedLibs(" -L//cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/gsl/2.2.1-omkpbe2/lib -lgsl -lgslcblas -lm ");
             ROOT.gSystem.CompileMacro("%s/src/CMGTools/TTHAnalysis/macros/finalMVA/BDT_eventReco.C" % os.environ['CMSSW_BASE'],"kO");
 
         algo = getattr(ROOT,algostring)
         hj2017 = ("2017" in weightfile_hj)
+        hjLegacy = ("legacy" in weightfile_hj)
 
-        self.run = ROOT.BDT_EventReco(weightfile_bloose,weightfile_btight,weightfile_hj,hj2017,weightfile_hjj,weightfile_rTT,weightfile_httTT,kinfitfile_httTT,algo,csv_looseWP,csv_mediumWP)
+        self.run = ROOT.BDT_EventReco(weightfile_bloose,weightfile_btight,weightfile_hj,hj2017,hjLegacy,weightfile_hjj,weightfile_rTT,weightfile_httTT,kinfitfile_httTT,algo,csv_looseWP,csv_mediumWP)
         self.run.setDebug(False)
 
         if algo==ROOT.k_BDTv8_Hj:
@@ -89,11 +99,24 @@ class BDT_eventReco: # has to run on a recleaner with label _Recl
             "H_Wmass",
             "H_mass",
             ]
+        self.outbranches = [ "BDT%s_eventReco_%s"%(self.prefix,k)+self.systsJEC[var] for k in self.branches for var in self.systsJEC ]
 
+    # old interface
     def listBranches(self):
-        return [ "BDT%s_eventReco_%s"%(self.prefix,k)+self.systsJEC[var] for k in self.branches for var in self.systsJEC ]
-
+        return self.outbranches
     def __call__(self,event):
+        return self.runIt(event, CMGCollection)
+    
+    # new interface
+    def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
+        declareOutput(self,wrappedOutputTree, self.outbranches)
+
+    def analyze(self, event):
+        writeOutput(self, self.runIt(event, NanoAODCollection))
+        return True
+
+    # code
+    def runIt(self,event, Collection):
         out = {}
 
         all_leps = [l for l in Collection(event,"LepGood","nLepGood")]
@@ -107,13 +130,7 @@ class BDT_eventReco: # has to run on a recleaner with label _Recl
             jets = [j for j in Collection(event,"JetSel"+self.inputlabel,"nJetSel"+self.inputlabel)]
 
             jetptcut = 25
-            if (_var==0): jets = filter(lambda x : x.pt>jetptcut, jets)
-            elif (_var==1): jets = filter(lambda x : x.pt*x.corr_JECUp/x.corr>jetptcut, jets)
-            elif (_var==-1): jets = filter(lambda x : x.pt*x.corr_JECDown/x.corr>jetptcut, jets)
-
-            if (_var==0): jetcorr = [1 for x in jets]
-            elif (_var==1): jetcorr = [x.corr_JECUp/x.corr for x in jets]
-            elif (_var==-1): jetcorr = [x.corr_JECDown/x.corr for x in jets]
+            jets = filter(lambda x : getattr(x, 'pt%s'%self.systsJEC[_var]) > jetptcut, jets)
 
             res = [-100]*len(self.branches)
 
@@ -125,12 +142,10 @@ class BDT_eventReco: # has to run on a recleaner with label _Recl
 
             if good:
                 self.run.clear()
-                for i,j in enumerate(jets): self.run.addJet(j.pt*jetcorr[i],j.eta,j.phi,j.mass,j.btagCSV,j.btagDeepCSV,j.btagDeepCSVCvsL,j.btagDeepCSVCvsB,j.ptd,j.axis1,j.mult,j.qgl)
+                for i,j in enumerate(jets): self.run.addJet(getattr(j,'pt%s'%self.systsJEC[_var]),j.eta,j.phi,j.mass,0,j.btagDeepB, j.btagDeepFlavB,0,0,0,0,0,j.qgl)
                 for l in leps: self.run.addLep(l.conePt,l.eta,l.phi,l.mass)
                 res = self.run.EvalMVA()
-
             for i,x in enumerate(res): out["BDT%s_eventReco_%s"%(self.prefix,self.branches[i])+self.systsJEC[var]] = res[i]
-
         return out
 
 

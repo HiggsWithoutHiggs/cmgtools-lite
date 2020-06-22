@@ -58,15 +58,64 @@ class MCAnalysis:
             for k in fro.split(","):
                 self._premap.append((re.compile(k.strip()+"$"), to))
         self.variationsFile = UncertaintyFile(options.variationsFile,options) if options.variationsFile else None
-        self.readMca(samples,options)
+        if ',' in options.year:
+            self._subMcas = []
+            rankoffset = 0
+            years, lumis = options.year.split(','), options.lumi.split(',')
+            if len(years) != len(lumis): raise RuntimeError("Mismatch between number of years and of luminosities")
+            for year,lumi in zip(years,lumis):
+                suboptions = deepcopy(options)
+                suboptions.year = year
+                suboptions.lumi = lumi
+                suboptions.path = [ path  + '/' + year for path in options.path ]
+                self._subMcas.append( MCAnalysis(samples, suboptions))
+                for pname,tty in self._subMcas[-1]._allData.iteritems():
+                    if pname in self._allData:
+                        self._allData[pname].extend( tty )
+                    else:
+                        self._allData[pname] = tty
+                for tty in self._subMcas[-1]._data: self._data.append(tty)
+                for tty in self._subMcas[-1]._signals: self._signals.append(tty)
+                for tty in self._subMcas[-1]._backgrounds: self._backgrounds.append(tty)
+                for key, issig in self._subMcas[-1]._isSignal.iteritems():
+                    if key not in self._isSignal: self._isSignal[key] = issig
+                for key, rank in self._subMcas[-1]._rank.iteritems():
+                    self._rank[key] = rank + rankoffset
+                for key, opt in self._subMcas[-1]._optionsOnlyProcesses:
+                    self._optionsOnlyProcesses[key] = opt
+                for proc in self._subMcas[-1]._groupsToNormalize:
+                    self._groupsToNormalize.append(proc)
+            rankoffset = len( self._rank )
+            return
 
-    def readMca(self,samples,options,addExtras={}):
+        if os.path.isfile(samples): 
+            self.readMca(open(samples,'r'),options)
+        elif os.path.isdir(samples) and options.tree == "NanoAOD":
+            options.path = [ samples ]
+            pseudo_samples = []
+            for f in glob(samples+"/*.root"):
+                cname = os.path.basename(f)[:-len(".root")]
+                if re.match(".*Run201\d[A-Z].*", cname):
+                    pseudo_samples.append( "%s_data : %s" % (cname, cname) )
+                else:
+                    pseudo_samples.append( "%s : %s : 1" % (cname, cname) )
+            self.readMca(pseudo_samples, options)
+        if options.checkFriendsFirst:
+            print "Checking for all friend trees..."
+            ok = True
+            for ttys in self._allData.itervalues():
+                for tty in ttys:
+                    if not tty.checkFriendTrees():
+                        ok = False
+            if not ok: raise RuntimeError()
+    def readMca(self,samples,options,addExtras={},selectProcesses=None):
         field_previous = None
         extra_previous = {}
-        for line in open(samples,'r'):
+        for line in samples:
             if re.match("\s*#.*", line): continue
             line = re.sub(r"(?<!\\)#.*","",line)  ## regexp black magic: match a # only if not preceded by a \!
             line = line.replace(r"\#","#")        ## and now we just unescape the remaining #'s
+            if not line.strip(): continue
             extra = {}
             if ";" in line:
                 (line,more) = line.split(";")[:2]
@@ -77,8 +126,11 @@ class MCAnalysis:
                         extra[key] = eval(val)
                     else: extra[setting] = True
             for k,v in addExtras.iteritems():
-                if k in extra: raise RuntimeError, 'You are trying to overwrite an extra option already set'
-                extra[k] = v
+                if k[-1] == ":": extra[k[:-1]] = v # forced overwrite
+                elif k[-1] == "+": extra[k[:-1]] += v # forced append
+                else:
+                    if k in extra: raise RuntimeError, 'You are trying to overwrite an extra option already set'
+                    extra[k] = v
             field = [f.strip() for f in line.split(':')]
             if len(field) == 1 and field[0] == "*":
                 if len(self._allData): raise RuntimeError, "MCA defaults ('*') can be specified only before all processes"
@@ -92,6 +144,7 @@ class MCAnalysis:
                     if k not in extra: extra[k] = v
             if len(field) <= 1: continue
             if "SkipMe" in extra and extra["SkipMe"] == True and not options.allProcesses: continue
+            if "years"  in extra and options.year and options.year not in extra['years'].split(','): continue
             if 'PostFix' in extra:
                 hasPlus = (field[0][-1]=='+')
                 if hasPlus: field[0] = field[0][:-1]
@@ -131,7 +184,11 @@ class MCAnalysis:
                 if 'IncludeMca' not in extra: raise RuntimeError, 'You have declared a component with IncludeMca format, but not included this option'
                 extra_to_pass = copy(extra)
                 del extra_to_pass['IncludeMca']
-                self.readMca(extra['IncludeMca'],options,addExtras=extra_to_pass) # call readMca recursively on included mca files
+                selectProcesses = None
+                if 'Processes' in extra_to_pass: 
+                    selectProcesses = extra_to_pass['Processes']
+                    del extra_to_pass['Processes']
+                self.readMca(open(extra['IncludeMca'],'r'),options,addExtras=extra_to_pass,selectProcesses=selectProcesses) # call readMca recursively on included mca files
                 continue
             # Customize with additional weight if requested
             if 'AddWeight' in extra:
@@ -149,13 +206,19 @@ class MCAnalysis:
             for p0 in options.filesToExclude:
                 for p in p0.split(","):
                     if re.match(p+"$", field[1]): skipMe = True
+            if selectProcesses and not skipMe:
+                # remove a postfix if it was added
+                pnameOriginal = pname[:-len(extra['PostFix'])] if 'PostFix' in extra else pname
+                skipMe = True
+                for p in selectProcesses.split(","):
+                    if re.match(p+"$", pnameOriginal): skipMe = False
             if skipMe: continue
 
             # Load variations if matching this process name
             variations={}
             if self.variationsFile:
                 for var in self.variationsFile.uncertainty():
-                    if var.procmatch().match(pname) and var.binmatch().match(options.binname): 
+                    if var.procmatch().match(pname) and var.binmatch().match(options.binname) and ( var.year() == None or options.year == var.year()) : 
                         #if var.name in variations:
                         #    print "Variation %s overriden for process %s, new process pattern %r, bin %r (old had %r, %r)" % (
                         #            var.name, pname, var.procpattern(), var.binpattern(), variations[var.name].procpattern(), variations[var.name].binpattern())
@@ -166,7 +229,7 @@ class MCAnalysis:
                        options._warning_NormSystematic_variationsFile = [pname] + getattr(options, '_warning_NormSystematic_variationsFile',[])
                        print "Using both a NormSystematic and a variationFile is not supported. Will disable the NormSystematic for process %s" % pname
             if 'NormSystematic' in extra:
-                variations['_norm'] = Uncertainty('norm_%s'%pname,pname,options.binname,'normSymm',[1+float(extra['NormSystematic'])])
+                variations['_norm'] = Uncertainty('norm_%s'%pname,pname,options.binname,'normSymm',[1+float(extra['NormSystematic'])], options=options)
                 if not hasattr(options, '_deprecation_warning_NormSystematic'):
                     print 'Added normalization uncertainty %s to %s, %s. Please migrate away from using the deprecated NormSystematic option.'%(extra['NormSystematic'],pname,field[1])
                     options._deprecation_warning_NormSystematic = False
@@ -174,7 +237,7 @@ class MCAnalysis:
             cnames = [ x.strip() for x in field[1].split("+") ]
             total_w = 0.; to_norm = False; ttys = [];
             genWeightName = extra["genWeightName"] if "genWeightName" in extra else "genWeight"
-            genSumWeightName = extra["genSumWeightName"] if "genSumWeightName" in extra else "genEventSumw"
+            genSumWeightName = extra["genSumWeightName"] if "genSumWeightName" in extra else "genEventSumw_"
             is_w = -1
             pname0 = pname
             for cname in cnames:
@@ -199,7 +262,10 @@ class MCAnalysis:
 
                 rootfile = "%s/%s/%s/%s_tree.root" % (basepath, cname, treename, treename)
                 if options.remotePath:
-                    rootfile = "root:%s/%s/%s_tree.root" % (options.remotePath, cname, treename)
+                    if treename == "NanoAOD":
+                        rootfile = "root:%s/%s.root" % (options.remotePath, cname)
+                    else:
+                        rootfile = "root:%s/%s/%s_tree.root" % (options.remotePath, cname, treename)
                 elif os.path.exists(rootfile+".url"): #(not os.path.exists(rootfile)) and :
                     rootfile = open(rootfile+".url","r").readline().strip()
                 elif (not os.path.exists(rootfile)) and os.path.exists("%s/%s/%s/tree.root" % (basepath, cname, treename)):
@@ -660,7 +726,7 @@ class MCAnalysis:
             print "-"*((fmtlen+1)*len(table)+clen)
             for (cut,row) in fmttable:
                 print cfmt % cut,
-                print " ".join(row)
+                print " ".join(row),
                 print ""
         elif self._options.txtfmt in ("tsv","csv","dsv","ssv","md","jupyter"):
             sep = { 'tsv':"\t", 'csv':",", 'dsv':';', 'ssv':' ', 'md':' | ', 'jupyter':' | ' }[self._options.txtfmt]
@@ -766,10 +832,10 @@ class MCAnalysis:
         if self._options.jobs == 0: 
             retlist = map(func, tasks)
         else:
-            from multiprocessing import Pool
+            from multiprocessing import Pool, cpu_count
             retlist = []
             for i in xrange(0,len(tasks),chunkTasks):
-                pool = Pool(self._options.jobs)
+                pool = Pool(min(self._options.jobs,cpu_count()))
                 retlist += pool.map(func, tasks[i:(i+chunkTasks)], 1)
                 pool.close()
                 pool.join()
@@ -842,6 +908,7 @@ def addMCAnalysisOptions(parser,addTreeToYieldOnesToo=True):
     parser.add_option("--scale-process", dest="processesToScale", type="string", default=[], nargs=2, action="append", help="--scale-process X Y make X scale by Y (equivalent to add it in the mca.txt)");
     parser.add_option("--process-norm-syst", dest="processesToSetNormSystematic", type="string", default=[], nargs=2, action="append", help="--process-norm-syst X Y sets the NormSystematic of X to be Y (for plots, etc. Overrides mca.txt)");
     parser.add_option("--AP", "--all-processes", dest="allProcesses", action="store_true", help="Include also processes that are marked with SkipMe=True in the MCA.txt")
+    parser.add_option("--year", dest="year", type="string", default ="" , help="If non void, only processes of that contain that year or none are processed ")
     parser.add_option("--use-cnames",  dest="useCnames", action="store_true", help="Use component names instead of process names (for debugging)")
     parser.add_option("--project", dest="project", type="string", help="Project to a scenario (e.g 14TeV_300fb_scenario2)")
     parser.add_option("--plotgroup", dest="plotmergemap", type="string", default=[], action="append", help="Group plots into one. Syntax is '<newname> := (comma-separated list of regexp)', can specify multiple times. Note it is applied after plotting.")
@@ -855,6 +922,7 @@ def addMCAnalysisOptions(parser,addTreeToYieldOnesToo=True):
     parser.add_option("--efr", "--external-fitResult", dest="externalFitResult", type="string", default=None, nargs=2, help="External fitResult")
     parser.add_option("--aefr", "--alt-external-fitResults", dest="altExternalFitResults", type="string", default=[], nargs=2, action="append", help="External fitResult")
     parser.add_option("--aefrl", "--alt-external-fitResult-labels", dest="altExternalFitResultLabels", type="string", default=[], nargs=1, action="append", help="External fitResult")
+    parser.add_option("--check-friends-first", dest="checkFriendsFirst", action="store_true", default=False, help="At start, check that all friends are available, and raise an error otherwise.");
 
 if __name__ == "__main__":
     from optparse import OptionParser

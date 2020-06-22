@@ -1,25 +1,76 @@
-data : DoubleMuon_2017B
-data : DoubleMuon_2017C
-data : DoubleMuon_2017D
-data : DoubleMuon_2017E
-data : DoubleMuon_2017F
-data : DoubleEG_2017B
-data : DoubleEG_2017C
-data : DoubleEG_2017D
-data : DoubleEG_2017E
-data : DoubleEG_2017F
-data : MuonEG_2017B
-data : MuonEG_2017C
-data : MuonEG_2017D
-data : MuonEG_2017E
-data : MuonEG_2017F
-data : SingleMuon_2017B
-data : SingleMuon_2017C
-data : SingleMuon_2017D
-data : SingleMuon_2017E
-data : SingleMuon_2017F
-data : SingleElectron_2017B
-data : SingleElectron_2017C
-data : SingleElectron_2017D
-data : SingleElectron_2017E
-data : SingleElectron_2017F
+data : DoubleMuon_Run2018A_17Sep2018    ; years="2018"  
+data : DoubleMuon_Run2018B_17Sep2018	; years="2018"
+data : DoubleMuon_Run2018C_17Sep2018	; years="2018"
+data : DoubleMuon_Run2018D_PromptReco_v2; years="2018"
+data : EGamma_Run2018A_17Sep2018	; years="2018"
+data : EGamma_Run2018B_17Sep2018	; years="2018"
+data : EGamma_Run2018C_17Sep2018	; years="2018"
+data : EGamma_Run2018D_PromptReco_v2	; years="2018"
+data : MuonEG_Run2018A_17Sep2018	; years="2018"
+data : MuonEG_Run2018B_17Sep2018	; years="2018"
+data : MuonEG_Run2018C_17Sep2018	; years="2018"
+data : MuonEG_Run2018D_PromptReco_v2	; years="2018"
+data : SingleMuon_Run2018A_17Sep2018	; years="2018"
+data : SingleMuon_Run2018B_17Sep2018	; years="2018"
+data : SingleMuon_Run2018C_17Sep2018	; years="2018"
+data : SingleMuon_Run2018D_PromptReco_v2; years="2018"
+data : DoubleEG_Run2017B_31Mar2018       ; years="2017"        
+data : DoubleEG_Run2017C_31Mar2018	 ; years="2017"
+data : DoubleEG_Run2017D_31Mar2018	 ; years="2017"
+data : DoubleEG_Run2017E_31Mar2018	 ; years="2017"
+data : DoubleEG_Run2017F_31Mar2018	 ; years="2017"
+data : DoubleMuon_Run2017B_31Mar2018	 ; years="2017"
+data : DoubleMuon_Run2017C_31Mar2018	 ; years="2017"
+data : DoubleMuon_Run2017D_31Mar2018	 ; years="2017"
+data : DoubleMuon_Run2017E_31Mar2018	 ; years="2017"
+data : DoubleMuon_Run2017F_31Mar2018	 ; years="2017"
+data : MuonEG_Run2017B_31Mar2018	 ; years="2017"
+data : MuonEG_Run2017C_31Mar2018	 ; years="2017"
+data : MuonEG_Run2017D_31Mar2018	 ; years="2017"
+data : MuonEG_Run2017E_31Mar2018	 ; years="2017"
+data : MuonEG_Run2017F_31Mar2018	 ; years="2017"
+data : SingleElectron_Run2017B_31Mar2018 ; years="2017"
+data : SingleElectron_Run2017C_31Mar2018 ; years="2017"
+data : SingleElectron_Run2017D_31Mar2018 ; years="2017"
+data : SingleElectron_Run2017E_31Mar2018 ; years="2017"
+data : SingleElectron_Run2017F_31Mar2018 ; years="2017"
+data : SingleMuon_Run2017B_31Mar2018	 ; years="2017"
+data : SingleMuon_Run2017C_31Mar2018	 ; years="2017"
+data : SingleMuon_Run2017D_31Mar2018	 ; years="2017"
+data : SingleMuon_Run2017E_31Mar2018	 ; years="2017"
+data : SingleMuon_Run2017F_31Mar2018     ; years="2017"
+data : DoubleEG_Run2016B_17Jul2018       ; years="2016"
+data : DoubleEG_Run2016C_17Jul2018	 ; years="2016"
+data : DoubleEG_Run2016D_17Jul2018	 ; years="2016"
+data : DoubleEG_Run2016E_17Jul2018	 ; years="2016"
+data : DoubleEG_Run2016F_17Jul2018	 ; years="2016"
+data : DoubleEG_Run2016G_17Jul2018	 ; years="2016"
+data : DoubleEG_Run2016H_17Jul2018	 ; years="2016"
+data : DoubleMuon_Run2016B_17Jul2018	 ; years="2016"
+data : DoubleMuon_Run2016C_17Jul2018	 ; years="2016"
+data : DoubleMuon_Run2016D_17Jul2018	 ; years="2016"
+data : DoubleMuon_Run2016E_17Jul2018	 ; years="2016"
+data : DoubleMuon_Run2016F_17Jul2018	 ; years="2016"
+data : DoubleMuon_Run2016G_17Jul2018	 ; years="2016"
+data : DoubleMuon_Run2016H_17Jul2018	 ; years="2016"
+data : MuonEG_Run2016B_17Jul2018	 ; years="2016"
+data : MuonEG_Run2016C_17Jul2018	 ; years="2016"
+data : MuonEG_Run2016D_17Jul2018	 ; years="2016"
+data : MuonEG_Run2016E_17Jul2018	 ; years="2016"
+data : MuonEG_Run2016F_17Jul2018	 ; years="2016"
+data : MuonEG_Run2016G_17Jul2018	 ; years="2016"
+data : MuonEG_Run2016H_17Jul2018	 ; years="2016"
+data : SingleElectron_Run2016B_17Jul2018 ; years="2016"
+data : SingleElectron_Run2016C_17Jul2018 ; years="2016"
+data : SingleElectron_Run2016D_17Jul2018 ; years="2016"
+data : SingleElectron_Run2016E_17Jul2018 ; years="2016"
+data : SingleElectron_Run2016F_17Jul2018 ; years="2016"
+data : SingleElectron_Run2016G_17Jul2018 ; years="2016"
+data : SingleElectron_Run2016H_17Jul2018 ; years="2016"
+data : SingleMuon_Run2016B_17Jul2018	 ; years="2016"
+data : SingleMuon_Run2016C_17Jul2018	 ; years="2016"
+data : SingleMuon_Run2016D_17Jul2018	 ; years="2016"
+data : SingleMuon_Run2016E_17Jul2018	 ; years="2016"
+data : SingleMuon_Run2016F_17Jul2018	 ; years="2016"
+data : SingleMuon_Run2016G_17Jul2018	 ; years="2016"
+data : SingleMuon_Run2016H_17Jul2018     ; years="2016"    
