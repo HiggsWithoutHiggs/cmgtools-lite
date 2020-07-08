@@ -1,0 +1,1 @@
+nanopy.py Trash run_HwH_fromNanoAOD_cfg.py --option analysis=main --option year=2018 --option test=102X-MC --single -N 10000 --long-term-cache

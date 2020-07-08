@@ -37,15 +37,16 @@ autoAAA(mcSamples_+allData, quiet=not(getHeppyOption("verboseAAA",False)), redir
 mcSamples_, _ = mergeExtensions(mcSamples_)
 
 # Triggers
-if year == 2018:
-    from CMGTools.RootTools.samples.triggers_13TeV_DATA2018 import all_triggers as triggers
-elif year == 2017:
-    from CMGTools.RootTools.samples.triggers_13TeV_DATA2017 import all_triggers as triggers
-    triggers["FR_1mu_iso"] = [] # they probably existed but we didn't use them in 2017
-elif year == 2016:
-    from CMGTools.RootTools.samples.triggers_13TeV_DATA2016 import all_triggers as triggers
-    triggers["FR_1mu_noiso_smpd"] = [] 
+# if year == 2018:
+#     from CMGTools.RootTools.samples.triggers_13TeV_DATA2018 import all_triggers as triggers
+# elif year == 2017:
+#     from CMGTools.RootTools.samples.triggers_13TeV_DATA2017 import all_triggers as triggers
+#     triggers["FR_1mu_iso"] = [] # they probably existed but we didn't use them in 2017
+# elif year == 2016:
+#     from CMGTools.RootTools.samples.triggers_13TeV_DATA2016 import all_triggers as triggers
+#     triggers["FR_1mu_noiso_smpd"] = [] 
 
+from CMGTools.TTHAnalysis.tools.nanoAOD.ttH_modules import triggerGroups_dict
 
 DatasetsAndTriggers = []
 if analysis == "main":
@@ -70,12 +71,12 @@ if analysis == "main":
         # other Higgs processes
         "GGHZZ4L", "VHToNonbb", "VHToNonbb_ll", "ZHTobb_ll", "ZHToTauTau", "TTWH", "TTZH",
     ]])
-    DatasetsAndTriggers.append( ("DoubleMuon", triggers["mumu_iso"] + triggers["3mu"]) )
-    DatasetsAndTriggers.append( ("EGamma",     triggers["ee"] + triggers["3e"] + triggers["1e_iso"]) if year == 2018 else
-                                ("DoubleEG",   triggers["ee"] + triggers["3e"]) )
-    DatasetsAndTriggers.append( ("MuonEG",     triggers["mue"] + triggers["2mu1e"] + triggers["2e1mu"]) )
-    DatasetsAndTriggers.append( ("SingleMuon", triggers["1mu_iso"]) )
-    DatasetsAndTriggers.append( ("SingleElectron", triggers["1e_iso"]) if year != 2018 else (None,None) )
+    DatasetsAndTriggers.append( ("DoubleMuon", triggerGroups_dict["Trigger_2m"][year] + triggerGroups_dict["Trigger_3m"][year]) )
+    DatasetsAndTriggers.append( ("EGamma",     triggerGroups_dict["Trigger_2e"][year] + triggerGroups_dict["Trigger_3e"][year] + triggerGroups_dict["Trigger_1e"][year]) if year == 2018 else
+                                ("DoubleEG",   triggerGroups_dict["Trigger_2e"][year] + triggerGroups_dict["Trigger_3e"][year]) )
+    DatasetsAndTriggers.append( ("MuonEG",     triggerGroups_dict["Trigger_em"][year] + triggerGroups_dict["Trigger_mee"][year] + triggerGroups_dict["Trigger_mme"][year]) )
+    DatasetsAndTriggers.append( ("SingleMuon", triggerGroups_dict["Trigger_1m"][year]) )
+    DatasetsAndTriggers.append( ("SingleElectron", triggerGroups_dict["Trigger_1e"][year]) if year != 2018 else (None,None) )
 elif analysis == "frqcd":
     mcSamples = byCompName(mcSamples_, [
         "QCD_Mu15", "QCD_Pt(20|30|50|80|120|170)to.*_Mu5", 
@@ -221,26 +222,29 @@ from CMGTools.TTHAnalysis.tools.nanoAOD.ttH_modules import *
 from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import PostProcessor
 
 # in the cut string, keep only the main cuts to have it simpler
-modules = ttH_sequence_step1
-# configure it for HwH
-lepSkim.minLeptonsNoPrescale = 1
-lepSkim.minLeptons = 1
-lepSkim.requireSameSignPair = False
-lepSkim.minJets = 2
-lepSkim.minMET = 0
+from CMGTools.TTHAnalysis.tools.nanoAOD.HwHPrescalingLepSkimmer import HwHPrescalingLepSkimmer
+HwH1lepSkim = HwHPrescalingLepSkimmer(5, 
+                muonSel = muonSelection, electronSel = electronSelection,
+                minLeptonsNoPrescale = 1, # things with less than 1 leptons are rejected irrespectively of the prescale
+                minLeptons = 1,
+                jetSel = lambda j : j.pt > 25 and abs(j.eta) < 5.0 and j.jetId > 0, 
+                fatJetSel = lambda fj : fj.pt > 25 and abs(fj.eta) < 2.4 and fj.jetId > 0, 
+                minJets = 6, minMET = 0)
 
-HwH_skim_cut = ("nMuon + nElectron >= 2 &&" + 
+HwH_sequence_step1 = [HwH1lepSkim, lepMerge, autoPuWeight, yearTag, xsecTag, lepJetBTagCSV, lepJetBTagDeepCSV, lepJetBTagDeepFlav, lepMasses]
+
+modules = HwH_sequence_step1
+HwH_skim_cut =  ("nMuon + nElectron >= 1 &&" + 
        "Sum$(Muon_pt > {muPt} && Muon_miniPFRelIso_all < {miniRelIso} && Muon_sip3d < {sip3d}) +"
-       "Sum$(Electron_pt > {muPt} && Electron_miniPFRelIso_all < {miniRelIso} && Electron_sip3d < {sip3d} && Electron_{eleId}) >= 2").format(**conf)
+       "Sum$(Electron_pt > {muPt} && Electron_miniPFRelIso_all < {miniRelIso} && Electron_sip3d < {sip3d} && Electron_{eleId}) >= 1").format(**conf)
 cut = HwH_skim_cut
-
 
 compression = "ZLIB:3" #"LZ4:4" #"LZMA:9"
 branchsel_in = os.environ['CMSSW_BASE']+"/src/CMGTools/TTHAnalysis/python/tools/nanoAOD/branchsel_in.txt"
 branchsel_out = None
 
 if analysis == "frqcd":
-    modules = ttH_sequence_step1_FR
+    modules = HwH_sequence_step1_FR
     cut = ttH_skim_cut_FR
     compression = "LZMA:9"
     branchsel_out = os.environ['CMSSW_BASE']+"/src/CMGTools/TTHAnalysis/python/plotter/ttH-multilepton/qcd1l-skim-ec.txt"
@@ -267,8 +271,18 @@ elif test == "94X-MC-miniAOD":
     TTLep_pow.preprocessor = nanoAODPreprocessor("/afs/cern.ch/work/g/gpetrucc/ttH/CMSSW_10_4_0/src/nanov4_NANO_cfg.py")
     selectedComponents = [TTLep_pow]
 elif test == "102X-MC":
-    TTLep_pow = kreator.makeMCComponent("TTLep_pow", "/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM", "CMS", ".*root", 831.76*((3*0.108)**2), useAAA=True )
-    TTLep_pow.files = TTLep_pow.files[:1]
-    selectedComponents = [TTLep_pow]
+    #TTLep_pow = kreator.makeMCComponent("TTLep_pow", "/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM", "CMS", ".*root", 831.76*((3*0.108)**2), useAAA=True )
+    #TTLep_pow.files = [ 'root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv7/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/NANOAODSIM/Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/60000/BC7E3B9F-944F-C74D-860C-6BAB4C2D050E.root' ]
+
+    TTSemi_pow = kreator.makeMCComponent("TTSemiLep_pow", "/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM", "CMS", ".*root", 831.76*2*(3*0.108)*(1-3*0.108), useAAA=True )
+    TTSemi_pow.files = [ 'root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv7/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/NANOAODSIM/Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/60000/16BCDE28-4361-0547-9DA4-273777B575C2.root' ]
+
+    W1JetsToLNu_LO = kreator.makeMCComponent("W1JetsToLNu_LO","/W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM", "CMS", ".*root", 8123*1.17)
+    W1JetsToLNu_LO.files = [ 'root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv7/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/260000/93250E4A-9D02-854F-9CD6-80A0172FDCC1.root' ]
+
+    localfile = os.path.expandvars("/tmp/$USER/%s" % os.path.basename(W1JetsToLNu_LO.files[0]))
+    if os.path.exists(localfile): W1JetsToLNu_LO.files = [ localfile ] 
+    selectedComponents = [W1JetsToLNu_LO]
+
 elif test in ('2','3','3s'):
     doTestN(test, selectedComponents)
