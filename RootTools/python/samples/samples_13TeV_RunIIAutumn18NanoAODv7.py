@@ -380,13 +380,6 @@ DiBosons = [
     ZZTo2L2Nu,ZZTo2L2Nu_ext2
 ]
 
-# === DI-BOSONOS + TOP + JET
-TJWW_1L = kreator.makeMCComponentFromEOS("TJWW_1L", "/TJWW_1L/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/user/emanuele/hwh/nanoaod/2018/",".*pp-tjww-1l.*root",0.00299)
-TJWW_2L = kreator.makeMCComponentFromEOS("TJWW_2L", "/TJWW_2L/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/user/emanuele/hwh/nanoaod/2018/",".*pp-tjww-2l.*root",0.000506)
-TJWZ    = kreator.makeMCComponentFromEOS("TJWZ",    "/TJWZ/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM",   "/store/user/emanuele/hwh/nanoaod/2018/",".*pp-tjwz.*root",   0.00566)
-TJZZ    = kreator.makeMCComponentFromEOS("TJZZ",    "/TJZZ/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM",   "/store/user/emanuele/hwh/nanoaod/2018/",".*pp-tjzz.*root",   0.000517)
-
-
 # ===  TRI-BOSONS
 
 # xsec from GenXSecAnalyzer
@@ -422,11 +415,23 @@ VHToNonbb, #VHToNonbb_ll,
 
 # === PRIVATE SAMPLES
 
+# === DI-BOSONOS + TOP + JET
+TJWW_1L = kreator.makeMCComponentFromEOS("TJWW_1L", "/TJWW_1L/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/user/emanuele/hwh/nanoaod/2018/",".*pp-tjww-1l.*root",0.00299)
+TJWW_2L = kreator.makeMCComponentFromEOS("TJWW_2L", "/TJWW_2L/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/user/emanuele/hwh/nanoaod/2018/",".*pp-tjww-2l.*root",0.000506)
+TJWZ    = kreator.makeMCComponentFromEOS("TJWZ",    "/TJWZ/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM",   "/store/user/emanuele/hwh/nanoaod/2018/",".*pp-tjwz.*root",   0.00566)
+TJZZ    = kreator.makeMCComponentFromEOS("TJZZ",    "/TJZZ/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM",   "/store/user/emanuele/hwh/nanoaod/2018/",".*pp-tjzz.*root",   0.000517)
+
+TJXs = [
+    TJWW_1L,
+    TJWW_2L,
+    TJWZ,
+    TJZZ,
+]
 
 # ----------------------------- summary ----------------------------------------
 
 
-mcSamples = QCDPt + QCDHT + QCD_Mus + QCD_EMs + QCD_bcToE + Ws + DYs + VJetsQQHT + TTs + Ts + TTXs + TTXXs + DiBosons + TriBosons + Higgs
+mcSamples = QCDPt + QCDHT + QCD_Mus + QCD_EMs + QCD_bcToE + Ws + DYs + VJetsQQHT + TTs + Ts + TTXs + TTXXs + TJXs + DiBosons + TriBosons + Higgs
 
 
 samples = mcSamples

@@ -70,6 +70,8 @@ if analysis == "main":
         "WWW", "WWW_ll", "WWZ", "WZG", "WZZ", "ZZZ",
         # other Higgs processes
         "GGHZZ4L", "VHToNonbb", "VHToNonbb_ll", "ZHTobb_ll", "ZHToTauTau", "TTWH", "TTZH",
+        # tj + dibosons
+        "TJWW_1L","TJWW_2L","TJWZ","TJZZ",
     ]])
     DatasetsAndTriggers.append( ("DoubleMuon", triggerGroups_dict["Trigger_2m"][year] + triggerGroups_dict["Trigger_3m"][year]) )
     DatasetsAndTriggers.append( ("EGamma",     triggerGroups_dict["Trigger_2e"][year] + triggerGroups_dict["Trigger_3e"][year] + triggerGroups_dict["Trigger_1e"][year]) if year == 2018 else
@@ -199,7 +201,7 @@ process.skim1El = cms.EDFilter("PATElectronRefSelector",
 process.nanoAOD_step.insert(0, process.skim1El)
 """)
 if analysis == "main":
-    cropToLumi(byCompName(selectedComponents,["^(?!.*(TTH|TTW|TTZ)).*"]),1000.)
+    cropToLumi(byCompName(selectedComponents,["^(?!.*(TJ|TTH|TTW|TTZ)).*"]),1000.)
     cropToLumi(byCompName(selectedComponents,["T_","TBar_"]),100.)
     cropToLumi(byCompName(selectedComponents,["DYJetsToLL"]),2.)
 if analysis == "frqcd":
