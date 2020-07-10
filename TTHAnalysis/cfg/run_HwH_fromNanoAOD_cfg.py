@@ -229,7 +229,7 @@ HwH1lepSkim = HwHPrescalingLepSkimmer(5,
                 minLeptons = 1,
                 jetSel = lambda j : j.pt > 25 and abs(j.eta) < 5.0 and j.jetId > 0, 
                 fatJetSel = lambda fj : fj.pt > 25 and abs(fj.eta) < 2.4 and fj.jetId > 0, 
-                minJets = 6, minMET = 0)
+                minJets = 4, minMET = 0)
 
 HwH_sequence_step1 = [HwH1lepSkim, lepMerge, autoPuWeight, yearTag, xsecTag, lepJetBTagCSV, lepJetBTagDeepCSV, lepJetBTagDeepFlav, lepMasses]
 
@@ -271,8 +271,8 @@ elif test == "94X-MC-miniAOD":
     TTLep_pow.preprocessor = nanoAODPreprocessor("/afs/cern.ch/work/g/gpetrucc/ttH/CMSSW_10_4_0/src/nanov4_NANO_cfg.py")
     selectedComponents = [TTLep_pow]
 elif test == "102X-MC":
-    #TTLep_pow = kreator.makeMCComponent("TTLep_pow", "/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM", "CMS", ".*root", 831.76*((3*0.108)**2), useAAA=True )
-    #TTLep_pow.files = [ 'root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv7/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/NANOAODSIM/Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/60000/BC7E3B9F-944F-C74D-860C-6BAB4C2D050E.root' ]
+    TTLep_pow = kreator.makeMCComponent("TTLep_pow", "/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM", "CMS", ".*root", 831.76*((3*0.108)**2), useAAA=True )
+    TTLep_pow.files = [ 'root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv7/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/NANOAODSIM/Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/60000/BC7E3B9F-944F-C74D-860C-6BAB4C2D050E.root' ]
 
     TTSemi_pow = kreator.makeMCComponent("TTSemiLep_pow", "/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM", "CMS", ".*root", 831.76*2*(3*0.108)*(1-3*0.108), useAAA=True )
     TTSemi_pow.files = [ 'root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv7/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/NANOAODSIM/Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/60000/16BCDE28-4361-0547-9DA4-273777B575C2.root' ]
@@ -280,9 +280,12 @@ elif test == "102X-MC":
     W1JetsToLNu_LO = kreator.makeMCComponent("W1JetsToLNu_LO","/W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM", "CMS", ".*root", 8123*1.17)
     W1JetsToLNu_LO.files = [ 'root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv7/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/260000/93250E4A-9D02-854F-9CD6-80A0172FDCC1.root' ]
 
-    localfile = os.path.expandvars("/tmp/$USER/%s" % os.path.basename(W1JetsToLNu_LO.files[0]))
-    if os.path.exists(localfile): W1JetsToLNu_LO.files = [ localfile ] 
-    selectedComponents = [W1JetsToLNu_LO]
+    TJWW_1L = kreator.makeMCComponentFromEOS("TJWW_1L", "/TJWW_1L/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/user/emanuele/hwh/nanoaod/2018/",".*pp-tjww-1l.*root",0.00299)
+    TJWW_1L.files = [ '/eos/cms/store/user/emanuele/hwh/nanoaod/2018/pp-tjww-1l.root' ]
+
+    localfile = os.path.expandvars("/tmp/$USER/%s" % os.path.basename(TJWW_1L.files[0]))
+    if os.path.exists(localfile): TJWW_1L.files = [ localfile ] 
+    selectedComponents = [TJWW_1L]
 
 elif test in ('2','3','3s'):
     doTestN(test, selectedComponents)
