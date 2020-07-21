@@ -61,6 +61,11 @@ if $LSFL; then
     $TERSE || echo "# Will check for a LSFJOB_ dir or non-empty condor*.out "
 fi
 
+# in case of condor, set the default runtime to 20hr
+if [ "$Q" == "-q HTCondor" ]; then
+    Q="-q HTCondor -t 1200"
+fi
+
 $TERSE || echo "# Will test for the presence of file $F"
 
 if $P; then
