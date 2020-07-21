@@ -37,7 +37,7 @@ class nanoAODPreprocessor:
         try:
             if verbose: print("Filename %s is remote, will do a copy to local path %s " % (fname,localfile))
             start = time.clock()
-            subprocess.check_output(["xrdcp","-f","-N",fname,localfile])
+            subprocess.check_output(["xrdcp","-f","-N","-t 5",fname,localfile])
             if verbose: print("Time used for transferring the file locally: %s s" % (time.clock() - start))
             return localfile, (not longTermCache)
         except:
