@@ -97,6 +97,7 @@ def haddRec(odir, idirs):
 def haddNano(odir, idirs, firstTime=True):
     print 'adding', idirs
     print 'to', odir
+    eosdir = ''
 
     if os.path.exists(odir):
         raise RuntimeError("Error, %s exists already." % odir)
@@ -115,17 +116,27 @@ def haddNano(odir, idirs, firstTime=True):
                         found = True
                     elif fname.endswith(".root.url") and os.path.isfile(os.path.join(chunk, fname)):
                         with open(os.path.join(chunk, fname)) as urlfile:
-                            files.append(urlfile.read().rstrip())
+                            ff = (urlfile.read().rstrip()).replace('root://eoscms.cern.ch/','')
+                            if os.path.isfile(ff):
+                                files.append(ff)
+                            else:
+                                print "Warning: the file %s is not on EOS" % ff
+                            eosdir = '/'.join(ff.replace('root://eoscms.cern.ch/','').split('/')[:-2])
                         found=True
                 if not found: 
-                    raise RuntimeError("Error, chunk %s doesn't contain any root file" % chunk)
+                    print "Warning, chunk %s doesn't contain any root file" % chunk
             elif chunk.endswith(".root"):
                 files.append(chunk)
     else:
         files = idirs[:]
 
+    if len(eosdir):
+        print "Target directory changed from %s to %s" % (odir,eosdir)
+
     if len(files) == 0:
-        raise RuntimeError("Error, no files for target %s" % odir)
+        print "Warning: no files for target %s (probably hadding partially finished nanopy)" % odir
+        return
+        #raise RuntimeError("Error, no files for target %s" % odir)
     elif len(files) > 200:
         newlist = []; sublist = []
         for f in files:
@@ -143,9 +154,17 @@ def haddNano(odir, idirs, firstTime=True):
 
     try:
         if len(files) == 1:
-            shutil.move(files[0], odir+".root")
+            fname = files[0].replace("root://eoscms.cern.ch/","")
+            shutil.move(fname, odir+".root")
         else:
-            subprocess.call(["haddnano.py", odir+".root" ] + files)
+            if len(eosdir)==0:
+                subprocess.call(["haddnano.py", odir+".root" ] + files)
+            else:
+                targetfile = '/tmp/{user}/{odir}.root'.format(user=os.environ['USER'],odir=os.path.basename(odir))
+                subprocess.call(["haddnano.py", targetfile ] + files)
+                os.system('xrdcp -f {tmpfile} root://eoscms.cern.ch/{eosdir}'.format(tmpfile=targetfile,eosdir=eosdir))
+                os.remove(targetfile)
+
     except OSError:
         print 
         print 'ERROR: directory in the way. Maybe you ran hadd already in this directory? Remove it and try again'
@@ -191,8 +210,18 @@ def haddChunks(idir, removeDestDir, cleanUp=False, ignoreDirs=None, maxSize=None
             #print odir, cchunks
             running = [ dict(files=[], size=0.) ]
             for ch in cchunks:
-                if nanoAOD and os.path.isfile(ch+".root"):
-                    size = os.path.getsize(ch+".root")
+                if nanoAOD:
+                    if os.path.isfile(ch+".root"):
+                        size = os.path.getsize(ch+".root")
+                    else:
+                        size = 0
+                        for fname in os.listdir(ch):
+                            if fname.endswith(".root"): size += os.path.getsize(os.path.join(ch,fname))
+                            elif fname.endswith(".root.url"):
+                                with open(os.path.join(ch,fname)) as urlfile:
+                                    ff = (urlfile.read().rstrip()).replace('root://eoscms.cern.ch/','')
+                                    if os.path.isfile(ff):
+                                        size += os.path.getsize(ff)
                 else:
                     size = sum(sum(os.path.getsize(os.path.join(p,f)) for f in fs) for p,d,fs in os.walk(ch))
                 if running[-1]['size'] + size > threshold:
