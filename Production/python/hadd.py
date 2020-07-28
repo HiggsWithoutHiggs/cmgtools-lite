@@ -155,7 +155,10 @@ def haddNano(odir, idirs, firstTime=True):
     try:
         if len(files) == 1:
             fname = files[0].replace("root://eoscms.cern.ch/","")
-            shutil.move(fname, odir+".root")
+            if len(eosdir)==0:
+                shutil.move(fname, odir+".root")
+            else:
+                shutil.move(fname, '{eosdir}/{odir}.root'.format(eosdir=eosdir,odir=os.path.basename(odir)))
         else:
             if len(eosdir)==0:
                 subprocess.call(["haddnano.py", odir+".root" ] + files)
