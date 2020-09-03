@@ -71,7 +71,13 @@ if analysis == "main":
         # other Higgs processes
         "GGHZZ4L", "VHToNonbb", "VHToNonbb_ll", "ZHTobb_ll", "ZHToTauTau", "TTWH", "TTZH",
         # tj + dibosons
-        "TJWW_1L","TJWW_2L","TJWZ","TJZZ",
+        "TJWpWm_SM_2018","TJWZ_SM_2018","TJZZ_SM_2018",
+        "TJWpWm_0p8_2018","TJWZ_0p8_2018",
+    ]])
+    mcSignal = byCompName(mcSamples_, ["%s(|_PS)$"%dset for dset in [
+        # tj + dibosons
+        "TJWpWm_SM_2018","TJWpWp_SM_2018","TJWZ_SM_2018","TJZZ_SM_2018",
+        "TJWpWm_0p8_2018","TJWpWp_0p8_2018","TJWZ_0p8_2018","TJZZ_0p8_2018",
     ]])
     DatasetsAndTriggers.append( ("DoubleMuon", triggerGroups_dict["Trigger_2m"][year] + triggerGroups_dict["Trigger_3m"][year]) )
     DatasetsAndTriggers.append( ("EGamma",     triggerGroups_dict["Trigger_2e"][year] + triggerGroups_dict["Trigger_3e"][year] + triggerGroups_dict["Trigger_1e"][year]) if year == 2018 else
@@ -114,6 +120,8 @@ if getHeppyOption('selectComponents'):
         selectedComponents = mcSamples
     elif getHeppyOption('selectComponents')=='DATA':
         selectedComponents = dataSamples
+    elif getHeppyOption('selectComponents')=='signalMC':
+        selectedComponents = mcSignal
     else:
         selectedComponents = byCompName(selectedComponents, getHeppyOption('selectComponents').split(","))
 autoAAA(selectedComponents, quiet=not(getHeppyOption("verboseAAA",False)), redirectorAAA="xrootd-cms.infn.it")
@@ -282,12 +290,12 @@ elif test == "102X-MC":
     W1JetsToLNu_LO = kreator.makeMCComponent("W1JetsToLNu_LO","/W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM", "CMS", ".*root", 8123*1.17)
     W1JetsToLNu_LO.files = [ 'root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv7/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/260000/93250E4A-9D02-854F-9CD6-80A0172FDCC1.root' ]
 
-    TJWW_1L = kreator.makeMCComponentFromEOS("TJWW_1L", "/TJWW_1L/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/user/emanuele/hwh/nanoaod/2018/",".*pp-tjww-1l.*root",0.00299)
-    TJWW_1L.files = [ '/eos/cms/store/user/emanuele/hwh/nanoaod/2018/pp-tjww-1l.root' ]
+    TJWpWm_SM_2018 = kreator.makeMCComponentFromEOS("TJWpWm_SM_2018", "/TJWpWm_SM_2018/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/cmst3/group/wmass/secret/signalNanoAOD/",".*TJWpWm_SM_2018.*root",0.000805)
+    TJWpWm_SM_2018.files = [ '/eos/cms/store/cmst3/group/wmass/secret/signalNanoAOD/TJWpWm_SM_2018.root' ]
 
-    localfile = os.path.expandvars("/tmp/$USER/%s" % os.path.basename(TJWW_1L.files[0]))
-    if os.path.exists(localfile): TJWW_1L.files = [ localfile ] 
-    selectedComponents = [TJWW_1L]
+    localfile = os.path.expandvars("/tmp/$USER/%s" % os.path.basename(TJWpWm_SM_2018.files[0]))
+    if os.path.exists(localfile): TJWpWm_SM_2018.files = [ localf5Dile ] 
+    selectedComponents = [TJWpWm_SM_2018]
 
 elif test in ('2','3','3s'):
     doTestN(test, selectedComponents)
