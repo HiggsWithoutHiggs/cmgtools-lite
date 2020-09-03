@@ -349,7 +349,7 @@ class TreeToYield:
             friendOpts += [ ('Friends', d+"/{cname}_Friend.root") for d in friendSimpleOpts]
         else:
             friendOpts += [ ('sf/t', d+"/evVarFriend_{cname}.root") for d in friendSimpleOpts]
-        return [ (tname,fname.format(name=self._name, cname=self._cname, P=self._basepath)) for (tname,fname) in friendOpts ]
+        return [ (tname,fname.format(name=self._name, cname=self._cname.replace('.root',''), P=self._basepath)) for (tname,fname) in friendOpts ]
     def checkFriendTrees(self, checkFiles=False):
         ok = True
         for (tn,fn) in self._listFriendTrees():
