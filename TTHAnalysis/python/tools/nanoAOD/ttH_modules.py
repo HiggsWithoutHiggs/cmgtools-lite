@@ -148,10 +148,11 @@ from CMGTools.TTHAnalysis.tools.hjDummCalc import HjDummyCalc
 hjDummy = lambda : HjDummyCalc(variations  = [ 'jes%s'%v for v in jecGroups] + ['jer%s'%x for x in ['barrel','endcap1','endcap2highpt','endcap2lowpt' ,'forwardhighpt','forwardlowpt']  ]  + ['HEM'])
 
 from CMGTools.TTHAnalysis.tools.objTagger import ObjTagger
+from PhysicsTools.NanoAODTools.postprocessing.modules.gen.genFriendProducer import genFriends
 isMatchRightCharge = lambda : ObjTagger('isMatchRightCharge','LepGood', [lambda l,g : (l.genPartFlav==1 or l.genPartFlav == 15) and (g.pdgId*l.pdgId > 0) ], linkColl='GenPart',linkVar='genPartIdx')
 mcMatchId     = lambda : ObjTagger('mcMatchId','LepGood', [lambda l : (l.genPartFlav==1 or l.genPartFlav == 15) ])
 mcPromptGamma = lambda : ObjTagger('mcPromptGamma','LepGood', [lambda l : (l.genPartFlav==22)])
-mcMatch_seq   = [ isMatchRightCharge, mcMatchId ,mcPromptGamma]
+mcMatch_seq   = [ genFriends, isMatchRightCharge, mcMatchId ,mcPromptGamma]
 
 countTaus = lambda : ObjTagger('Tight','TauSel_Recl', [lambda t : t.idDeepTau2017v2p1VSjet&4])
 
