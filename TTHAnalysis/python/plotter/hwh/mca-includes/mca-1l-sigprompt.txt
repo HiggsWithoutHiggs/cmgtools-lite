@@ -1,3 +1,4 @@
-tqWpWm+   : TJWpWm_SM_2018.root : xsec ; FillColor=ROOT.kOrange+10
+tqWpWm+   : TJWpWm_SM_2018 : xsec ; FillColor=ROOT.kOrange+10
+tqWpWm+   : TJWpWp_SM_2018 : xsec ; FillColor=ROOT.kOrange+10
                                                                                                                                                       
 
