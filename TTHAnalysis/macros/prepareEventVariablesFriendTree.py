@@ -189,8 +189,8 @@ if options.checkchunks:
         size = int(fields[4])
         fname = fields[8]
         basepattern = options.outPattern % r"(\w+)"
-        m1 = re.match(basepattern + r"%s.chunk(\d+).sub(\d+).root" % (), fname);
-        m2 = re.match(basepattern + r"%s.chunk(\d+).root", fname);
+        m1 = re.match(basepattern + r".chunk(\d+).sub(\d+).root", fname);
+        m2 = re.match(basepattern + r".chunk(\d+).root", fname);
         good = (size > 2048)
         if m1:
             sample = m1.group(1)
@@ -383,7 +383,7 @@ Error      = {logdir}/err.$(cluster).$(Dataset).$({chunk})
 Output     = {logdir}/out.$(cluster).$(Dataset).$({chunk})
 Log        = {logdir}/log.$(cluster).$(Dataset).$({chunk})
 
-use_x509userproxy = $ENV(X509_USER_PROXY)
+use_x509userproxy = True
 getenv = True
 request_memory = 2000
 +MaxRuntime = {maxruntime}
