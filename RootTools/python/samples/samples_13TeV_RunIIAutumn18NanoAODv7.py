@@ -416,16 +416,27 @@ VHToNonbb, #VHToNonbb_ll,
 # === PRIVATE SAMPLES
 
 # === DI-BOSONOS + TOP + JET
-TJWW_1L = kreator.makeMCComponentFromEOS("TJWW_1L", "/TJWW_1L/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/user/emanuele/hwh/nanoaod/2018/",".*pp-tjww-1l.*root",0.00299)
-TJWW_2L = kreator.makeMCComponentFromEOS("TJWW_2L", "/TJWW_2L/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/user/emanuele/hwh/nanoaod/2018/",".*pp-tjww-2l.*root",0.000506)
-TJWZ    = kreator.makeMCComponentFromEOS("TJWZ",    "/TJWZ/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM",   "/store/user/emanuele/hwh/nanoaod/2018/",".*pp-tjwz.*root",   0.00566)
-TJZZ    = kreator.makeMCComponentFromEOS("TJZZ",    "/TJZZ/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM",   "/store/user/emanuele/hwh/nanoaod/2018/",".*pp-tjzz.*root",   0.000517)
+TJWpWm_SM_2018 = kreator.makeMCComponentFromEOS("TJWpWm_SM_2018", "/TJWpWm_SM_2018/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/cmst3/group/wmass/secret/signalNanoAOD/",".*TJWpWm_SM_2018.*root",0.000805)
+TJWpWp_SM_2018 = kreator.makeMCComponentFromEOS("TJWpWp_SM_2018", "/TJWpWp_SM_2018/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/cmst3/group/wmass/secret/signalNanoAOD/",".*TJWpWp_SM_2018.*root",0.00118)
+TJWZ_SM_2018 = kreator.makeMCComponentFromEOS("TJWZ_SM_2018", "/TJWZ_SM_2018/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/cmst3/group/wmass/secret/signalNanoAOD/",".*TJWZ_SM_2018.*root",0.000729)
+TJZZ_SM_2018 = kreator.makeMCComponentFromEOS("TJZZ_SM_2018", "/TJZZ_SM_2018/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/cmst3/group/wmass/secret/signalNanoAOD/",".*TJZZ_SM_2018.*root",8.72e-5)
+
+# cross sections are copies of the SM ones, cannot find them in the MG output, to be changed at the plot level
+TJWpWm_0p8_2018 = kreator.makeMCComponentFromEOS("TJWpWm_0p8_2018", "/TJWpWm_0p8_2018/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/cmst3/group/wmass/secret/signalNanoAOD/",".*TJWpWm_0p8_2018.*root",0.000805)
+TJWpWp_0p8_2018 = kreator.makeMCComponentFromEOS("TJWpWp_0p8_2018", "/TJWpWp_0p8_2018/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/cmst3/group/wmass/secret/signalNanoAOD/",".*TJWpWp_0p8_2018.*root",0.00118)
+TJWZ_0p8_2018 = kreator.makeMCComponentFromEOS("TJWZ_0p8_2018", "/TJWZ_0p8_2018/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/cmst3/group/wmass/secret/signalNanoAOD/",".*TJWZ_0p8_2018.*root",0.000729)
+TJZZ_0p8_2018 = kreator.makeMCComponentFromEOS("TJZZ_0p8_2018", "/TJZZ_0p8_2018/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/cmst3/group/wmass/secret/signalNanoAOD/",".*TJZZ_0p8_2018.*root",8.72e-5)
+
 
 TJXs = [
-    TJWW_1L,
-    TJWW_2L,
-    TJWZ,
-    TJZZ,
+    TJWpWm_SM_2018,
+    TJWpWp_SM_2018,
+    TJWZ_SM_2018,
+    TJZZ_SM_2018,
+    TJWpWm_0p8_2018,
+    TJWpWp_0p8_2018,
+    TJWZ_0p8_2018,
+    TJZZ_0p8_2018,    
 ]
 
 # ----------------------------- summary ----------------------------------------

@@ -40,9 +40,12 @@ public:
           ruint * unsigned_;
   };
   
-  fastCombinedObjectRecleanerHelper(CollectionSkimmer &clean_taus, CollectionSkimmer &clean_jets, bool cleanJetsWithFOTaus, float bTagL, float bTagM, bool cleanWithRef=false) : clean_taus_(clean_taus), clean_jets_(clean_jets), deltaR2cut(0.16), cleanJetsWithFOTaus_(cleanJetsWithFOTaus), bTagL_(bTagL), bTagM_(bTagM), cleanWithRef_(cleanWithRef), deltaR2cut_taus(0.09) {
+  fastCombinedObjectRecleanerHelper(CollectionSkimmer &clean_taus, CollectionSkimmer &clean_jets, CollectionSkimmer &clean_tjets, CollectionSkimmer &clean_vjets, CollectionSkimmer &clean_ljets, bool cleanJetsWithFOTaus, float bTagL, float bTagM, bool cleanWithRef=false) : clean_taus_(clean_taus), clean_jets_(clean_jets), clean_tjets_(clean_tjets), clean_vjets_(clean_vjets), clean_ljets_(clean_ljets), deltaR2cut(0.16), cleanJetsWithFOTaus_(cleanJetsWithFOTaus), bTagL_(bTagL), bTagM_(bTagM), cleanWithRef_(cleanWithRef), deltaR2cut_taus(0.09), deltaR2cut_fatjets(0.64) {
     _ct.reset(new std::vector<int>);
     _cj.reset(new std::vector<int>);
+    _ctj.reset(new std::vector<int>);
+    _cvj.reset(new std::vector<int>);
+    _clj.reset(new std::vector<int>);
 }
   
   void setLeptons(rint *nLep, rfloats* lepPt, rfloats *lepEta, rfloats *lepPhi) {
@@ -64,6 +67,9 @@ public:
   void setJets(ruint *nJet, rfloats *jetPt, rfloats *jetEta, rfloats *jetPhi, rfloats *jetbtagCSV, vector<rfloats*> jetpt) {
     nJet_ = nJet; Jet_pt_ = jetPt; Jet_eta_ = jetEta; Jet_phi_ = jetPhi; Jet_btagCSV_ = jetbtagCSV; 
     Jet_corr_   = jetpt;
+  }
+  void setFatJets(ruint *nJet, rfloats *jetPt, rfloats *jetEta, rfloats *jetPhi, rfloats *jetbtagCSV) {
+    nFJet_ = nJet; FJet_pt_ = jetPt; FJet_eta_ = jetEta; FJet_phi_ = jetPhi; FJet_btagCSV_ = jetbtagCSV; 
   }
 
   void addJetPt(int pt){
@@ -179,13 +185,20 @@ public:
   }
 
   void setDR(float f) {deltaR2cut = f*f;}
+  void setDRFatJets(float f) {deltaR2cut_fatjets = f*f;}
 
-  std::pair<std::vector<int>*, std::vector<int>* > run() {
+  std::vector<std::vector<int>* > run() {
     clean_taus_.clear();
     clean_jets_.clear();
+    clean_tjets_.clear();
+    clean_vjets_.clear();
+    clean_ljets_.clear();
 
     _ct->clear();
     _cj->clear();
+    _ctj->clear();
+    _cvj->clear();
+    _clj->clear();
 
     for (int iT = 0, nT = *nTau_; iT < nT; ++iT) {
       if (!sel_taus[iT]) continue;
@@ -211,10 +224,9 @@ public:
       std::vector<int>   vetos_indices;
       for (int iL = 0, nL = *nLep_; iL < nL; ++iL) if (sel_leps[iL]) {vetos_eta.push_back((*Lep_eta_)[iL]); vetos_phi.push_back((*Lep_phi_)[iL]); if (Lep_jet_) vetos_indices.push_back((*Lep_jet_)[iL]);}
       for (int iT = 0, nT = *nTau_; iT < nT; ++iT) if (sel_taus[iT]) {vetos_eta.push_back((*Tau_eta_)[iT]); vetos_phi.push_back((*Tau_phi_)[iT]); if (Tau_jet_) vetos_indices.push_back((*Tau_jet_)[iT]);}
-      std::unique_ptr<bool[]> good;
-      good.reset(new bool[*nJet_]);
-      std::fill_n(good.get(),*nJet_,true);
-      if (cleanWithRef_){
+      std::unique_ptr<bool[]> good;   good.reset(new bool[*nJet_]);    std::fill_n(good.get(),*nJet_,true);
+      std::unique_ptr<bool[]> goodfj; goodfj.reset(new bool[*nFJet_]); std::fill_n(goodfj.get(),*nFJet_,true);
+      if (cleanWithRef_){ // only for std jets
 	for (uint iV=0; iV<vetos_indices.size(); iV++) {
 	  if (vetos_indices[iV] > -1) good[vetos_indices[iV]] = false;
 	}
@@ -229,6 +241,14 @@ public:
 	  if (best>-1 && mindr2<deltaR2cut) {
 	    good[best] = false;
 	  }
+	  mindr2 = -1; best = -1;
+	  for (int iFJ = 0, nFJ = *nFJet_; iFJ < nFJ; ++iFJ) {
+	    float dr2 = deltaR2(vetos_eta[iV],vetos_phi[iV],(*FJet_eta_)[iFJ], (*FJet_phi_)[iFJ]);
+	    if (mindr2<0 || dr2<mindr2) {mindr2=dr2; best=iFJ;}
+	  }
+	  if (best>-1 && mindr2<deltaR2cut) {
+	    goodfj[best] = false;
+	  }
 	}
       }
       for (int iJ = 0, nJ = *nJet_; iJ < nJ; ++iJ) {
@@ -236,27 +256,60 @@ public:
 	  _cj->push_back(iJ);
 	  if(fabs((*Jet_eta_)[iJ]) < 2.4)
 	    clean_jets_.push_back(iJ); // only to count fwd jets
+          bool lightjet = true;
+          for (int iFJ = 0, nFJ = *nFJet_; iFJ < nFJ; ++iFJ) { // clean all the jets mathcing a fatjet to count as a light jet
+            float dr2 = deltaR2((*Jet_eta_)[iJ],(*Jet_phi_)[iJ],(*FJet_eta_)[iFJ],(*FJet_phi_)[iFJ]);
+            if (goodfj[iFJ] && dr2<deltaR2cut_fatjets) 
+              lightjet = false;
+          }
+          if (lightjet) {
+            _clj->push_back(iJ);
+            clean_ljets_.push_back(iJ);
+          }
 	}
       }
+      for (int iFJ = 0, nFJ = *nFJet_; iFJ < nFJ; ++iFJ) {
+        if (goodfj[iFJ]) {
+          float csv = (*FJet_btagCSV_)[iFJ];
+          if (csv>bTagM_) {
+            _ctj->push_back(iFJ);
+            clean_tjets_.push_back(iFJ);
+          } 
+          else {
+            _cvj->push_back(iFJ);
+            clean_vjets_.push_back(iFJ);            
+          }
+        }
+      }
     }
-
-    return std::make_pair(_ct.get(),_cj.get());
+    std::vector<std::vector<int>* > ret;
+    ret.push_back(_ct.get());
+    ret.push_back(_cj.get());
+    ret.push_back(_ctj.get());
+    ret.push_back(_cvj.get());
+    ret.push_back(_clj.get());
+    return ret;
   }
 
 private:
   std::unique_ptr<bool[]> sel_leps, sel_leps_extrafortau, sel_taus, sel_jets;
-  CollectionSkimmer &clean_taus_, &clean_jets_;
-  rcount nLep_, nTau_, nJet_;
+  CollectionSkimmer &clean_taus_, &clean_jets_, &clean_tjets_, &clean_vjets_, &clean_ljets_;
+  rcount nLep_, nTau_, nJet_, nFJet_, nLJet_;
   rfloats *Lep_pt_, *Lep_eta_, *Lep_phi_;
   rfloats *Tau_pt_, *Tau_eta_, *Tau_phi_;
   rfloats *Jet_pt_, *Jet_phi_, *Jet_eta_, *Jet_btagCSV_;
+  rfloats *FJet_pt_, *FJet_phi_, *FJet_eta_, *FJet_btagCSV_;
   vector<rfloats*> Jet_corr_;
   rints    *Lep_jet_, *Tau_jet_;
   float deltaR2cut;
   float deltaR2cut_taus;
+  float deltaR2cut_fatjets;
   std::set<int> _jetptcuts;
   std::unique_ptr<std::vector<int> > _ct;
   std::unique_ptr<std::vector<int> > _cj;
+  std::unique_ptr<std::vector<int> > _ctj;
+  std::unique_ptr<std::vector<int> > _cvj;
+  std::unique_ptr<std::vector<int> > _clj;
   bool cleanJetsWithFOTaus_;
   float bTagL_,bTagM_;
   bool cleanWithRef_;
