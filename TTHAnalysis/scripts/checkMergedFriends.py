@@ -61,6 +61,10 @@ class CheckOneFriend:
                     print "%s OK." % self.file
                 return True
 
+
+MODULES_DATA = ["recleaner_step1","recleaner_step2_data","triggerSequence"]
+MODULES_MC = ["recleaner_step1","recleaner_step2_mc","mcMatch_seq","higgsDecay","triggerSequence"]
+
 if __name__ == "__main__":
 
     from optparse import OptionParser
@@ -68,13 +72,15 @@ if __name__ == "__main__":
     parser.add_option(      "--sp", dest="selectProcess",  type="string", default=None, help="Process only datasets that match this regexp (or comma-separated list of regexp)");
     parser.add_option(      "--xp", dest="excludeProcess",  type="string", default=None, help="Process only datasets that do not match this regexp (or comma-separated list of regexp)");
     parser.add_option("--skipFriend", dest="skipFriend", action="store_true", default=False, help="Check only main trees (useful if for some reason you don't have friends yet)");
-
-    
+    parser.add_option(      "--data",  dest="data", action="store_true", default=False, help="Run the data modules (default is MC modules)");
+    parser.add_option("-N", "--events",  dest="chunkSize", type="int",    default=1000000, help="Default chunk size when splitting trees");    
     (options, args) = parser.parse_args()
 
     if len(args)<2:
         print "Usage: python checkMergedFriends.py <dir_with_trees> <dir_with_friends> [options].\n"
         exit(1)
+
+    MODULES = MODULES_DATA if options.data else MODULES_MC
 
     sel_processes = []
     if options.selectProcess != None:
@@ -84,6 +90,7 @@ if __name__ == "__main__":
         excl_processes = options.excludeProcess.split(',')
 
     inputdir = args[0]
+    frienddir = args[1]
     badDir = []
     for root,dirs,files in os.walk(inputdir):
         for f in files:
@@ -91,7 +98,7 @@ if __name__ == "__main__":
             if options.selectProcess and not any(re.match(proc,f) for proc in sel_processes): continue
             if options.excludeProcess and any(re.match(proc,f) for proc in excl_processes): continue
             print "Checking dataset %s..." % f
-            cf = CheckOneFriend(inputdir,f, frienddir=args[1],skipFriend=options.skipFriend)
+            cf = CheckOneFriend(inputdir,f, frienddir=frienddir,skipFriend=options.skipFriend)
             if not cf.check(1):
                 badDir.append(f)
         break
@@ -102,6 +109,10 @@ if __name__ == "__main__":
         print "There are %d bad freiends. They are:" % len(badDir)
         for i in badDir:
             print i
+        print "This is the command to resub."
+        datasetMatch = ' -D '.join([ds.replace('.root','') for ds in badDir])
+        cmd = "python prepareEventVariablesFriendTree.py -j 0 -t NanoAOD --compression ZLIB:3 -I CMGTools.TTHAnalysis.tools.nanoAOD.ttH_modules {modules} {maintreedir} {frienddir} -N {nevents} -q condor -D {dm} --sub resub.sub".format(maintreedir=inputdir,frienddir=frienddir,nevents=options.chunkSize,dm=datasetMatch,modules=','.join(MODULES))
+        print cmd
     else:
         print "All files are OK"
 

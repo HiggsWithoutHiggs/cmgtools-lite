@@ -20,6 +20,7 @@ if __name__ == "__main__":
     for f in allfiles:
         if f=='logs': continue
         tokens = (os.path.basename(f)).split('.')
+        if len(tokens)<2: continue
         s = tokens[0]
         c = tokens[1]
         if not re.match('chunk\d+',c): continue
