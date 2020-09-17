@@ -57,6 +57,12 @@ float mass_2(float pt1, float eta1, float phi1, float m1, float pt2, float eta2,
     return (p41+p42).M();
 }
 
+float energy(float pt, float eta, float phi, float m) {
+  typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > PtEtaPhiMVector;
+  PtEtaPhiMVector p4(pt,eta,phi,m);
+  return p4.E();
+}
+
 float mt2davis(float pt1, float eta1, float phi1, float pt2, float eta2, float phi2, float met, float metphi){
     // NOTE THAT THIS FUNCTION ASSUMES MASSLESS OBJECTS. NOT ADVISED TO USE WITH HEMISPHERES ETC.
     typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > PtEtaPhiMVector;

@@ -238,11 +238,11 @@ triggerGroups=dict(
         2017 : lambda ev : ev.Trigger_2lss or ev.Trigger_3e or ev.Trigger_3m or ev.Trigger_mee or ev.Trigger_mme,
         2018 : lambda ev : ev.Trigger_2lss or ev.Trigger_3e or ev.Trigger_3m or ev.Trigger_mee or ev.Trigger_mme,
     },
-    Trigger_MET={
-        2016 : lambda ev : _fires(ev,'HLT_PFMET120_PFMHT120_IDTight'),
-        2017 : lambda ev : _fires(ev,'HLT_PFMET120_PFMHT120_IDTight'),
-        2018 : lambda ev : _fires(ev,'HLT_PFMET120_PFMHT120_IDTight'),
-    }
+    # Trigger_MET={
+    #     2016 : lambda ev : _fires(ev,'HLT_PFMET120_PFMHT120_IDTight'),
+    #     2017 : lambda ev : _fires(ev,'HLT_PFMET120_PFMHT120_IDTight'),
+    #     2018 : lambda ev : _fires(ev,'HLT_PFMET120_PFMHT120_IDTight'),
+    # }
 )
 
 
@@ -308,9 +308,9 @@ Trigger_mee  = lambda : EvtTagger('Trigger_mee',[ lambda ev : triggerGroups['Tri
 Trigger_mme  = lambda : EvtTagger('Trigger_mme',[ lambda ev : triggerGroups['Trigger_mme'][ev.year](ev) ])
 Trigger_2lss = lambda : EvtTagger('Trigger_2lss',[ lambda ev : triggerGroups['Trigger_2lss'][ev.year](ev) ])
 Trigger_3l   = lambda : EvtTagger('Trigger_3l',[ lambda ev : triggerGroups['Trigger_3l'][ev.year](ev) ])
-Trigger_MET  = lambda : EvtTagger('Trigger_MET',[ lambda ev : triggerGroups['Trigger_MET'][ev.year](ev) ])
+#Trigger_MET  = lambda : EvtTagger('Trigger_MET',[ lambda ev : triggerGroups['Trigger_MET'][ev.year](ev) ])
 
-triggerSequence = [Trigger_1e,Trigger_1m,Trigger_2e,Trigger_2m,Trigger_em,Trigger_3e,Trigger_3m,Trigger_mee,Trigger_mme,Trigger_2lss,Trigger_3l ,Trigger_MET]
+triggerSequence = [Trigger_1e,Trigger_1m,Trigger_2e,Trigger_2m,Trigger_em,Trigger_3e,Trigger_3m,Trigger_mee,Trigger_mme,Trigger_2lss,Trigger_3l] # ,Trigger_MET]
 
 
 from CMGTools.TTHAnalysis.tools.BDT_eventReco_cpp import BDT_eventReco
