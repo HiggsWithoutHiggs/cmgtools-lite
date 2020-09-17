@@ -13,7 +13,7 @@ fi;
 
 dir="./"
 if [[ "$1" != "" ]]; then dir=$1; fi
-for F in $(ls ${dir}/*_Friend.chunk*.root | sed 's/\.chunk[0-9]\+//' | sort | uniq); do
+for F in $(ls ${dir}/*Friend.chunk*.root | sed 's/\.chunk[0-9]\+//' | sort | uniq); do
     if test -f $F; then echo "Merged file $F already exists. skipping."; continue; fi
     FILES=$(ls ${F/.root/.chunk*.root} | \
             perl -npe 's/\.chunk(\d+)\./sprintf(".%06d.",$1)/e' | \
@@ -23,4 +23,4 @@ for F in $(ls ${dir}/*_Friend.chunk*.root | sed 's/\.chunk[0-9]\+//' | sort | un
     hadd -ff $F $FILES
 done
 
-if [[ $clean == 1 ]]; then mv ${dir}/*_Friend.chunk*.root Chunks; fi
+if [[ $clean == 1 ]]; then mv ${dir}/*Friend.chunk*.root Chunks; fi
