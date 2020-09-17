@@ -24,8 +24,8 @@ if preprocessor:
         from CMGTools.RootTools.samples.samples_13TeV_RunIISummer16MiniAODv3 import samples as mcSamples_
         from CMGTools.RootTools.samples.samples_13TeV_DATA2016 import dataSamples_17Jul2018 as allData
 else:
-    if year == 2018:
-        from CMGTools.RootTools.samples.samples_13TeV_RunIIAutumn18NanoAODv4 import samples as mcSamples_
+    if year == 2018: # edm: the only updated one, to test 
+        from CMGTools.RootTools.samples.samples_13TeV_RunIIAutumn18NanoAODv7 import samples as mcSamples_
         from CMGTools.RootTools.samples.samples_13TeV_DATA2018_NanoAOD import dataSamples_25Oct2019 as allData
     elif year == 2017:
         from CMGTools.RootTools.samples.samples_13TeV_RunIIFall17NanoAODv4 import samples as mcSamples_
@@ -33,7 +33,6 @@ else:
     elif year == 2016:
         from CMGTools.RootTools.samples.samples_13TeV_RunIISummer16NanoAODv4 import samples as mcSamples_
         from CMGTools.RootTools.samples.samples_13TeV_DATA2016_NanoAOD import dataSamples_25Oct2019 as allData
-mcSamples_=[]
 autoAAA(mcSamples_+allData, quiet=not(getHeppyOption("verboseAAA",False)), redirectorAAA="xrootd-cms.infn.it") # must be done before mergeExtensions
 mcSamples_, _ = mergeExtensions(mcSamples_)
 
@@ -71,6 +70,11 @@ if analysis == "main":
         "WWW", "WWW_ll", "WWZ", "WZG", "WZZ", "ZZZ",
         # other Higgs processes
         "GGHZZ4L", "VHToNonbb", "VHToNonbb_ll", "ZHTobb_ll", "ZHToTauTau", "TTWH", "TTZH",
+    ]])
+    hwhSamples = byCompName(mcSamples_, ["%s(|_PS)$"%dset for dset in [
+        # tj + dibosons
+        "TJWpWm_SM_2018","TJWpWp_SM_2018","TJWZ_SM_2018","TJZZ_SM_2018",
+        "TJWpWm_0p8_2018","TJWpWp_0p8_2018","TJWZ_0p8_2018","TJZZ_0p8_2018",
     ]])
     DatasetsAndTriggers.append( ("DoubleMuon", triggerGroups_dict["Trigger_2m"][year] + triggerGroups_dict["Trigger_3m"][year]) )
     DatasetsAndTriggers.append( ("EGamma",     triggerGroups_dict["Trigger_2e"][year] + triggerGroups_dict["Trigger_3e"][year] + triggerGroups_dict["Trigger_1e"][year]) if year == 2018 else
@@ -113,6 +117,9 @@ if getHeppyOption('selectComponents'):
         selectedComponents = mcSamples
     elif getHeppyOption('selectComponents')=='DATA':
         selectedComponents = dataSamples
+    elif getHeppyOption('selectComponents')=='HWHSIGNAL':
+        mcSamples = hwhSamples
+        selectedComponents = hwhSamples
     else:
         selectedComponents = byCompName(selectedComponents, getHeppyOption('selectComponents').split(","))
 autoAAA(selectedComponents, quiet=not(getHeppyOption("verboseAAA",False)), redirectorAAA="xrootd-cms.infn.it")
@@ -259,7 +266,14 @@ elif test == "94X-MC-miniAOD":
 elif test == "102X-MC":
     TTLep_pow = kreator.makeMCComponent("TTLep_pow", "/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIIAutumn18NanoAODv4-Nano14Dec2018_102X_upgrade2018_realistic_v16-v1/NANOAODSIM", "CMS", ".*root", 831.76*((3*0.108)**2), useAAA=True )
     TTLep_pow.files = TTLep_pow.files[:1]
-    selectedComponents = [TTLep_pow]
+
+    TJWpWm_SM_2018 = kreator.makeMCComponentFromEOS("TJWpWm_SM_2018", "/TJWpWm_SM_2018/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM","/store/cmst3/group/wmass/secret/signalNanoAOD/",".*TJWpWm_SM_2018.*root",0.000805)
+    TJWpWm_SM_2018.files = [ '/eos/cms/store/cmst3/group/wmass/secret/signalNanoAOD/TJWpWm_SM_2018.root' ]
+
+    localfile = os.path.expandvars("/tmp/$USER/%s" % os.path.basename(TJWpWm_SM_2018.files[0]))
+    if os.path.exists(localfile): TJWpWm_SM_2018.files = [ localf5Dile ] 
+    selectedComponents = [TJWpWm_SM_2018]
+
 
 elif test == "94X-data":
     json = 'Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1.txt'

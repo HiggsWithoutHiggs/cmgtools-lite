@@ -163,6 +163,7 @@ if __name__ == '__main__':
     listOfValues = range(0, len(components))
     listOfNames = [comp.name for comp in components]
 
+    batchManager.mode = batchManager.RunningMode(options.batch)
     batchManager.PrepareJobs( listOfValues, listOfNames )
     waitingTime = 0.1
     batchManager.SubmitJobs( waitingTime )
