@@ -1,0 +1,15 @@
+alwaystrue: 1
+trigger: Trigger_1e || Trigger_1m || Trigger_2lss || Trigger_3l
+filters: Flag_goodVertices && Flag_globalSuperTightHalo2016Filter && Flag_HBHENoiseFilter && Flag_HBHENoiseIsoFilter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_BadPFMuonFilter && (Flag_ecalBadCalibFilter || (year == 2016))  $DATA{&& Flag_eeBadScFilter}
+ptl25: LepGood1_pt>25
+Tight: LepGood1_isLepTight_Recl
+exclusive: nLepTight_Recl<=1 
+
+nT: nTJetSel_Recl >= 1
+ptT: TJetSel_Recl_pt[0] > 250
+nV: nVJetSel_Recl >= 1
+ptV: VJetSel_Recl_pt[0] >= 100 
+#mV: VJetSel_Recl_mass[0]>50 && VJetSel_Recl_mass[0]<100
+
+#5j: nJet25_Recl>=5
+1B: nBJetMedium25_Recl<=1
