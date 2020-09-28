@@ -12,7 +12,6 @@ class hwhDecayFinder( Module ):
         self.out.branch('GenTopDecayMode','I')
         self.out.branch('GenV1DecayMode','I')
         self.out.branch('GenV2DecayMode','I')
-        self.out.branch('nLepGood','I')
         self.out.branch('LepGood_genAncestor','I', lenVar='nLepGood')
 
     def getTopDecay(self, idx, genParts):
@@ -80,11 +79,11 @@ class hwhDecayFinder( Module ):
             self.out.fillBranch('GenTopDecayMode',1);
 
         for v,vDecay in enumerate(promptVDecays):
-            if   vDecay == [11,12] or vDecay == [12,11] :
+            if   vDecay == [11,12] or vDecay == [12,11] or vDecay == [11,11]:
                 self.out.fillBranch('GenV%dDecayMode'%(v+1),11)
-            elif vDecay == [13,14] or vDecay == [14,13] : 
+            elif vDecay == [13,14] or vDecay == [14,13] or vDecay == [13,13]:
                 self.out.fillBranch('GenV%dDecayMode'%(v+1),13);
-            elif vDecay == [15,16] or vDecay == [16,15] : 
+            elif vDecay == [15,16] or vDecay == [16,15] or vDecay == [15,15]:
                 self.out.fillBranch('GenV%dDecayMode'%(v+1),15);
             else:
                 self.out.fillBranch('GenV%dDecayMode'%(v+1),1);
