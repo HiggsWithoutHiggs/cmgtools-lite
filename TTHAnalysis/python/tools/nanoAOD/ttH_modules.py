@@ -401,6 +401,10 @@ higgsDecay = lambda : higgsDecayFinder()
 from CMGTools.TTHAnalysis.tools.nanoAOD.VHsplitter import VHsplitter
 vhsplitter = lambda : VHsplitter()
 
+from CMGTools.TTHAnalysis.tools.nanoAOD.hwhDecayFinder import hwhDecayFinder
+hwhDecay = lambda : hwhDecayFinder()
+
+
 # from CMGTools.TTHAnalysis.tools.synchTools import SynchTuples
 # synchTuples = lambda : SynchTuples()
 
