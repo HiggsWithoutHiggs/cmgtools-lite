@@ -13,7 +13,7 @@ def getVar(ev, l, s):
     return getattr(ev,'LepGood_%s'%s)[l]
 
 
-featureList = [
+commonFeatureList = [
     "lep1_conePt"      ,
     "lep1_eta"         ,
     "lep1_phi"         ,
@@ -29,7 +29,6 @@ featureList = [
     "jet1_pt"          ,
     "jet1_eta"         ,
     "jet1_phi"         ,    
-
 
     "jet2_pt"          ,
     "jet2_eta"         ,
@@ -67,6 +66,10 @@ features = {
     "lep2_eta"         : lambda ev : ev.LepGood_eta[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
     "lep2_phi"         : lambda ev : ev.LepGood_phi[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
 
+    "lep3_conePt"      : lambda ev : ev.LepGood_conePt[int(ev.iLepFO_Recl[2])] if ev.nLepFO_Recl >= 3 else -9,
+    "lep3_eta"         : lambda ev : ev.LepGood_eta[int(ev.iLepFO_Recl[2])] if ev.nLepFO_Recl >= 3 else -9,
+    "lep3_phi"         : lambda ev : ev.LepGood_phi[int(ev.iLepFO_Recl[2])] if ev.nLepFO_Recl >= 3 else -9,
+
     "maxeta"           : lambda ev : max( [abs(ev.LepGood_eta[int(ev.iLepFO_Recl[0])]), abs(ev.LepGood_eta[int(ev.iLepFO_Recl[1])])]),
     "Dilep_pdgId"      : lambda ev : (28 - abs(ev.LepGood_pdgId[int(ev.iLepFO_Recl[0])]) - abs(ev.LepGood_pdgId[int(ev.iLepFO_Recl[1])]))/2,
     
@@ -99,27 +102,34 @@ features = {
 
     }
 
+cuts = {
+    '2lss'       : {'sigll' : lambda ev: ev.GenV1DecayMode>1 and ev.GenV2DecayMode>1, 'ttv' : 1, 'tt' : 1, 'other' : 1},
+    '3l'         : {'sigll' : lambda ev: ev.GenV1DecayMode>1 and ev.GenV2DecayMode>1 and ev.nLepFO_Recl >= 3, 'ttv' : lambda ev: ev.nLepFO_Recl >= 3, 'tt' : lambda ev: ev.nLepFO_Recl >= 3, 'other' : lambda ev: ev.nLepFO_Recl >= 3}
+}
+
 classes = {
-    'sigll'      : { 'cut': lambda ev: ev.GenV1DecayMode>1 and ev.GenV2DecayMode>1, 'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
-    'ttv'        : { 'cut': lambda ev: 1, 'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
-    'tt'         : { 'cut': lambda ev: 1, 'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
-    'other'      : { 'cut': lambda ev: 1, 'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
+    'sigll'      : { 'cut': cuts['2lss']['sigll'], 'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
+    'ttv'        : { 'cut': cuts['2lss']['ttv'],   'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
+    'tt'         : { 'cut': cuts['2lss']['tt'],    'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
+    'other'      : { 'cut': cuts['2lss']['other'], 'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
 }
 
 sampleDir='/eos/cms/store/cmst3/group/wmass/secret/NanoTrees_HWH_2lskim_170920/2018/'
 
-sigSamples = []
+sigSamplesWpWp = []
+sigSamplesWZ = []
 ttvSamples = []
 ttSamples  = []
 othSamples = []
 
-sigSamples.extend( ['TJWpWp_SM_2018.root'] )
+sigSamplesWpWp.extend( ['TJWpWp_SM_2018.root'] )
+sigSamplesWZ.extend( ['TJWZ_SM_2018.root'] )
 ttvSamples.extend( ['TTWToLNu_fxfx.root']+['TTZToLLNuNu_amc_part%d.root'%i for i in range(1,2)] )
 ttSamples.extend( ['TTJets_SingleLeptonFromT.root','TTJets_SingleLeptonFromTbar.root']+['TTJets_DiLepton_part%d.root'%i for i in range(1,2)])
 othSamples.extend( ['WWTo2L2Nu.root','WZTo3LNu_fxfx.root','ZZTo4L.root'] )
 
 
-def toNumpy(maxEntries,task):
+def toNumpy(featureList,maxEntries,task):
     print('starting', task)
     fil, typs = task
     path = os.path.dirname(fil)
@@ -155,10 +165,12 @@ if __name__ == "__main__":
     parser = OptionParser(usage="%prog [options]")
     parser.add_option("--max-entries",   dest="maxEntries", default=1000000000, type="int", help="Max entries to process in each tree")
     parser.add_option("-o", "--outfile", dest="outfile", type="string", default="vars.pkl", help="Output pickle file (default: vars.pkl)");
+    parser.add_option("-c", "--channel", dest="channel", type="string", default="2lss", help="Final state: 2lss or 3l (default: 2lss)");
     (options, args) = parser.parse_args()
 
     tasks = []
     print('Setting up the tasks')
+    sigSamples = sigSamplesWpWp if options.channel=='2lss' else sigSamplesWZ
     for samp in sigSamples:
         tasks.append( (sampleDir+'/'+samp, ['sigll']) )
 
@@ -171,11 +183,18 @@ if __name__ == "__main__":
     for samp in othSamples:
         tasks.append( (sampleDir+'/'+samp, ['other']) )
     
-    print('Going to run the big thing')
+    print('Numpy conversion. It will take time...')
     print("max entries = ",options.maxEntries)
+
+    featureList = commonFeatureList
+    if options.channel=='3l':
+        featureList += ["lep3_conePt","lep3_eta","lep3_phi"]
+        for cl,vals in classes.iteritems():
+            vals['cut'] = cuts[options.channel][cl]
+            
     ## lxplus seems to have 10 cores/each
     p =  Pool(min(10,len(sigSamples+ttvSamples+ttSamples+othSamples)))
-    func = partial(toNumpy,options.maxEntries)
+    func = partial(toNumpy,featureList,options.maxEntries)
     results = list(tqdm.tqdm(p.imap(func, tasks), total=len(tasks)))
 
     print('Now putting everything together')
