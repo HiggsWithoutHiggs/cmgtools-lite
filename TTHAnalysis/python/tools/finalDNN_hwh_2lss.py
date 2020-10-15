@@ -12,7 +12,7 @@ class finalDNN_2lss(Module):
         self.outVars = []
         self._MVAs   = [] 
         self.fillInputs = fillInputs
-        varorder = ["lep1_conePt","lep1_eta","lep1_phi","lep1_charge","lep2_conePt","lep2_eta","lep2_phi","maxeta","Dilep_pdgId","jet1_pt","jet1_eta","jet1_phi","jet2_pt","jet2_eta","jet2_phi","jet3_pt","jet3_eta","jet3_phi","jetFwd1_pt","jetFwd1_eta","n_presel_jetFwd","n_presel_jet","nTopjet","topjet1_pt","topjet1_eta","topjet1_phi","topjet1_Ttag","nBJetLoose","nBJetMedium"]
+        varorder = ["lep1_pt","lep1_eta","lep1_phi","lep1_charge","lep2_pt","lep2_eta","lep2_phi","maxeta","Dilep_pdgId","jet1_pt","jet1_eta","jet1_phi","jet2_pt","jet2_eta","jet2_phi","jet3_pt","jet3_eta","jet3_phi","jetFwd1_pt","jetFwd1_eta","n_presel_jetFwd","n_presel_jet","nTopjet","topjet1_pt","topjet1_eta","topjet1_phi","topjet1_Ttag","nBJetLoose","nBJetMedium"]
         cats_2lss = ['predictions_tjvv','predictions_ttV','predictions_tt','predictions_other']
 
         if fillInputs:
@@ -60,17 +60,17 @@ class finalDNN_2lss(Module):
         
 
     def getVarsForVariation(self, var ): 
-        return {     "lep1_conePt"      : lambda ev : ev.LepGood_conePt[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
-                     "lep1_eta"         : lambda ev : ev.LepGood_eta[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else 0,
-                     "lep1_phi"         : lambda ev : ev.LepGood_phi[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
-                     "lep1_charge"      : lambda ev : ev.LepGood_charge[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
+        return {     "lep1_pt"          : lambda ev : ev.LepClean_Recl_pt[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
+                     "lep1_eta"         : lambda ev : ev.LepClean_Recl_eta[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else 0,
+                     "lep1_phi"         : lambda ev : ev.LepClean_Recl_phi[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
+                     "lep1_charge"      : lambda ev : ev.LepClean_Recl_charge[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
                      
-                     "lep2_conePt"      : lambda ev : ev.LepGood_conePt[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
-                     "lep2_eta"         : lambda ev : ev.LepGood_eta[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
-                     "lep2_phi"         : lambda ev : ev.LepGood_phi[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
+                     "lep2_pt"          : lambda ev : ev.LepClean_Recl_pt[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
+                     "lep2_eta"         : lambda ev : ev.LepClean_Recl_eta[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
+                     "lep2_phi"         : lambda ev : ev.LepClean_Recl_phi[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
                      
-                     "maxeta"           : lambda ev : max( [abs(ev.LepGood_eta[int(ev.iLepFO_Recl[0])]), abs(ev.LepGood_eta[int(ev.iLepFO_Recl[1])])]),
-                     "Dilep_pdgId"      : lambda ev : (28 - abs(ev.LepGood_pdgId[int(ev.iLepFO_Recl[0])]) - abs(ev.LepGood_pdgId[int(ev.iLepFO_Recl[1])]))/2,
+                     "maxeta"           : lambda ev : max( [abs(ev.LepClean_Recl_eta[int(ev.iLepFO_Recl[0])]), abs(ev.LepClean_Recl_eta[int(ev.iLepFO_Recl[1])])]),
+                     "Dilep_pdgId"      : lambda ev : (28 - abs(ev.LepClean_Recl_pdgId[int(ev.iLepFO_Recl[0])]) - abs(ev.LepClean_Recl_pdgId[int(ev.iLepFO_Recl[1])]))/2,
                      
                      "jet1_pt"          : lambda ev : getattr(ev,'JetSel_Recl_pt')[0] if getattr(ev,'nJet25_Recl') > 0 else -9,
                      "jet1_eta"         : lambda ev : abs(ev.JetSel_Recl_eta[0]) if getattr(ev,'nJet25_Recl') > 0 else 9,

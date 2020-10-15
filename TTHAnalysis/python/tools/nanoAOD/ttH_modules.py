@@ -439,3 +439,6 @@ from CMGTools.TTHAnalysis.tools.nanoAOD.ttH_gen_reco import ttH_gen_reco
 #from CMGTools.TTHAnalysis.tools.topRecoSemiLept import TopRecoSemiLept
 #topRecoModule = lambda : TopRecoSemiLept(constraints=['kWHadMass','kWLepMass','kTopLepMass','kTopHadMass'])
 eventVarsSequence = [finalDNN2lss,finalDNN3l]
+
+# example of running event variables
+#python prepareEventVariablesFriendTree.py -j 0 -t NanoAOD --compression ZLIB:3 -I CMGTools.TTHAnalysis.tools.nanoAOD.ttH_modules eventVarsSequence trees/2lskim/2018/ trees/2lskim/2018/5_evtVars_v0/ -N 1000 -d 'TJWZ_SM_2018' -F 'Friends' 'trees/2lskim/2018/3_recleaner_vMarcAllVars/{cname}_Friend.root' -c 0
