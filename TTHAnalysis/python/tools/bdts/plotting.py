@@ -12,6 +12,7 @@ if __name__ == "__main__":
 
     from optparse import OptionParser
     parser = OptionParser(usage="%prog [options]")
+    parser.add_option("-c", "--channel", dest="channel", type="string", default="2lss", help="Final state: 2lss or 3l (default: 2lss)");
     parser.add_option("-v", "--varfile", dest="varfile", type="string", default="vars.pkl", help="Input pickle file (default: vars.pkl)");
     parser.add_option("-m", "--modelfile", dest="modelfile", type="string", default="model.h5", help="Input model file (default: model.h5)");
     parser.add_option("--pdir", "--print-dir", dest="printDir", type="string", default="plots", help="print out plots in this directory");
@@ -48,18 +49,21 @@ if __name__ == "__main__":
     for ext in ['png','pdf']:
         plt.savefig(outname+'/roc.'+ext)
 
-    for var in range(29):
+    nvars = 29 if options.channel=='2lss' else 32
+    for var in range(nvars):
         together = np.dstack( (x[:,var], y ) )[0]
         
         class1 =  (together[together[:,1] == 0]) [:,0]
         class2 =  (together[together[:,1] == 1]) [:,0]
         class3 =  (together[together[:,1] == 2]) [:,0]
+        class4 =  (together[together[:,1] == 2]) [:,0]
 
         bins = 20
         plt.clf()
         plt.hist(class1, bins, alpha=0.5,density=True, label='Sig ll')
-        plt.hist(class2, bins, alpha=0.5,density=True, label='ttW')
+        plt.hist(class2, bins, alpha=0.5,density=True, label='ttW,ttZ')
         plt.hist(class3, bins, alpha=0.5,density=True, label='tt')
+        plt.hist(class4, bins, alpha=0.5,density=True, label='other')
         plt.legend(loc='upper right')
         plt.show()
     
@@ -91,6 +95,7 @@ if __name__ == "__main__":
     class1 =  (together[together[:,1] == 0]) [:,0]
     class2 =  (together[together[:,1] == 1]) [:,0]
     class3 =  (together[together[:,1] == 2]) [:,0]
+    class4 =  (together[together[:,1] == 3]) [:,0]
     bins = 20
     plt.clf()
     plt.hist(class1, bins, alpha=0.5,density=True, label='Sig ll')

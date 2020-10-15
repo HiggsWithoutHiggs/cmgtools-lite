@@ -362,9 +362,11 @@ from CMGTools.TTHAnalysis.tools.nanoAOD.finalMVA_4l import FinalMVA_4L
 finalMVA_4l = lambda : FinalMVA_4L()
 
 # these are for hwh
-from CMGTools.TTHAnalysis.tools.finalMVA_DNN_2lss import finalMVA_DNN_2lss
-finalMVA2Lss = lambda : finalMVA_DNN_2lss() # use this for data
+from CMGTools.TTHAnalysis.tools.finalDNN_hwh_2lss import finalDNN_2lss
+finalDNN2lss = lambda : finalDNN_2lss() # use this for data
 
+from CMGTools.TTHAnalysis.tools.finalDNN_hwh_3l import finalDNN_3l
+finalDNN3l = lambda : finalDNN_3l() # use this for data
 
 from PhysicsTools.NanoAODTools.postprocessing.modules.btv.btagSFProducer import btagSFProducer
 
@@ -436,4 +438,4 @@ from CMGTools.TTHAnalysis.tools.nanoAOD.ttH_gen_reco import ttH_gen_reco
 #
 #from CMGTools.TTHAnalysis.tools.topRecoSemiLept import TopRecoSemiLept
 #topRecoModule = lambda : TopRecoSemiLept(constraints=['kWHadMass','kWLepMass','kTopLepMass','kTopHadMass'])
-eventVarsSequence = [finalMVA2Lss]
+eventVarsSequence = [finalDNN2lss,finalDNN3l]

@@ -10,19 +10,19 @@ from keras.backend import tensorflow_backend as K
 from keras import optimizers
 
 
-def getCompiledModelA():
+def getCompiledModelA(nvars):
     # optimal so far ( 0.980, 0.966)
     model = Sequential()
-    model.add(Dense(30,input_dim=29, activation='relu'))
+    model.add(Dense(30,input_dim=nvars, activation='relu'))
     model.add(Dense(10, activation='relu'))
     model.add(Dense(4, activation='softmax'))
     adam = optimizers.adam(lr=1e-4) 
     model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy','categorical_crossentropy'])
     return model
 
-def getCompiledModelB():
+def getCompiledModelB(nvars):
     model = Sequential()
-    model.add(Dense(30,input_dim=29, activation='relu'))
+    model.add(Dense(30,input_dim=nvars, activation='relu'))
     model.add(Dropout(0.4))
     model.add(Dense(10, activation='relu'))
     model.add(Dropout(0.4))
@@ -74,9 +74,11 @@ if __name__ == "__main__":
     from optparse import OptionParser
     parser = OptionParser(usage="%prog [options]")
     parser.add_option("-i", "--infile", dest="infile", type="string", default="vars.pkl", help="Input pickle file (default: vars.pkl)");
-    parser.add_option("-o", "--outfile", dest="outfile", type="string", default="trained_model", help="Output pickle file (default: vars.pkl)");
+    parser.add_option("-o", "--outfile", dest="outfile", type="string", default="trained_model", help="Output pb and h5 fil;e (default: trained_model)");
+    parser.add_option("-c", "--channel", dest="channel", type="string", default="2lss", help="Final state: 2lss or 3l (default: 2lss)");
     (options, args) = parser.parse_args()
 
+    nvars = 29 if options.channel=='2lss' else 32
 
     data = pickle.load( open(options.infile,'rb'))
     sums = np.sum(data['train_y'],axis=0)
@@ -96,8 +98,8 @@ if __name__ == "__main__":
             inter_op_parallelism_threads=50)) as sess:
         K.set_session(sess)
         
-        model = getCompiledModelA()
-        #model = getCompiledModelB()
+        model = getCompiledModelA(nvars)
+        #model = getCompiledModelB(nvars)
 
         history = model.fit( data['train_x'], data['train_y'], epochs=10, batch_size=128, validation_data=(data['test_x'], data['test_y']), class_weight=class_weight)
 

@@ -7,7 +7,7 @@ from CMGTools.TTHAnalysis.tools.tfTool import TFTool
 import os 
 from copy import deepcopy
 
-class finalMVA_DNN_2lss(Module):
+class finalDNN_2lss(Module):
     def __init__(self, variations=[], doSystJEC=False, fillInputs=False):
         self.outVars = []
         self._MVAs   = [] 
