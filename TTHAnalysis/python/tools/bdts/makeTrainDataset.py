@@ -10,16 +10,16 @@ testCut   = lambda ev: ev.event%5==0
 trainCut  = lambda ev: ev.event%5!=0
 
 def getVar(ev, l, s):
-    return getattr(ev,'LepGood_%s'%s)[l]
+    return getattr(ev,'LepClean_Recl_%s'%s)[l]
 
 
 commonFeatureList = [
-    "lep1_conePt"      ,
+    "lep1_pt"      ,
     "lep1_eta"         ,
     "lep1_phi"         ,
     "lep1_charge"      ,
 
-    "lep2_conePt"      ,
+    "lep2_pt"      ,
     "lep2_eta"         ,
     "lep2_phi"         ,
 
@@ -57,21 +57,21 @@ commonFeatureList = [
 
 features = {
 
-    "lep1_conePt"      : lambda ev : ev.LepGood_conePt[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
-    "lep1_eta"         : lambda ev : ev.LepGood_eta[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else 0,
-    "lep1_phi"         : lambda ev : ev.LepGood_phi[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
-    "lep1_charge"      : lambda ev : ev.LepGood_charge[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
+    "lep1_pt"      : lambda ev : ev.LepClean_Recl_pt[0] if getattr(ev,'nLepClean_Recl') >= 1 else -9,
+    "lep1_eta"         : lambda ev : ev.LepClean_Recl_eta[0] if getattr(ev,'nLepClean_Recl') >= 1 else 0,
+    "lep1_phi"         : lambda ev : ev.LepClean_Recl_phi[0] if getattr(ev,'nLepClean_Recl') >= 1 else -9,
+    "lep1_charge"      : lambda ev : ev.LepClean_Recl_charge[0] if getattr(ev,'nLepClean_Recl') >= 1 else -9,
 
-    "lep2_conePt"      : lambda ev : ev.LepGood_conePt[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
-    "lep2_eta"         : lambda ev : ev.LepGood_eta[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
-    "lep2_phi"         : lambda ev : ev.LepGood_phi[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
+    "lep2_pt"      : lambda ev : ev.LepClean_Recl_pt[1] if getattr(ev,'nLepClean_Recl') >= 2 else -9,
+    "lep2_eta"         : lambda ev : ev.LepClean_Recl_eta[1] if getattr(ev,'nLepClean_Recl') >= 2 else -9,
+    "lep2_phi"         : lambda ev : ev.LepClean_Recl_phi[1] if getattr(ev,'nLepClean_Recl') >= 2 else -9,
 
-    "lep3_conePt"      : lambda ev : ev.LepGood_conePt[int(ev.iLepFO_Recl[2])] if ev.nLepFO_Recl >= 3 else -9,
-    "lep3_eta"         : lambda ev : ev.LepGood_eta[int(ev.iLepFO_Recl[2])] if ev.nLepFO_Recl >= 3 else -9,
-    "lep3_phi"         : lambda ev : ev.LepGood_phi[int(ev.iLepFO_Recl[2])] if ev.nLepFO_Recl >= 3 else -9,
+    "lep3_pt"      : lambda ev : ev.LepClean_Recl_pt[2] if getattr(ev,'nLepClean_Recl') >= 3 else -9,
+    "lep3_eta"         : lambda ev : ev.LepClean_Recl_eta[2] if getattr(ev,'nLepClean_Recl') >= 3 else -9,
+    "lep3_phi"         : lambda ev : ev.LepClean_Recl_phi[2] if getattr(ev,'nLepClean_Recl') >= 3 else -9,
 
-    "maxeta"           : lambda ev : max( [abs(ev.LepGood_eta[int(ev.iLepFO_Recl[0])]), abs(ev.LepGood_eta[int(ev.iLepFO_Recl[1])])]),
-    "Dilep_pdgId"      : lambda ev : (28 - abs(ev.LepGood_pdgId[int(ev.iLepFO_Recl[0])]) - abs(ev.LepGood_pdgId[int(ev.iLepFO_Recl[1])]))/2,
+    "maxeta"           : lambda ev : max( [abs(ev.LepClean_Recl_eta[0]), abs(ev.LepClean_Recl_eta[1])]) if getattr(ev,'nLepClean_Recl') >=2 else -9,
+    "Dilep_pdgId"      : lambda ev : (28 - abs(ev.LepClean_Recl_pdgId[0]) - abs(ev.LepClean_Recl_pdgId[1]))/2 if getattr(ev,'nLepClean_Recl') >=2 else -9,
     
     "jet1_pt"          : lambda ev : getattr(ev,'JetSel_Recl_pt')[0] if getattr(ev,'nJet25_Recl') > 0 else -9,
     "jet1_eta"         : lambda ev : abs(ev.JetSel_Recl_eta[0]) if getattr(ev,'nJet25_Recl') > 0 else 9,
@@ -103,8 +103,11 @@ features = {
     }
 
 cuts = {
-    '2lss'       : {'sigll' : lambda ev: ev.GenV1DecayMode>1 and ev.GenV2DecayMode>1, 'ttv' : 1, 'tt' : 1, 'other' : 1},
-    '3l'         : {'sigll' : lambda ev: ev.GenV1DecayMode>1 and ev.GenV2DecayMode>1 and ev.nLepFO_Recl >= 3, 'ttv' : lambda ev: ev.nLepFO_Recl >= 3, 'tt' : lambda ev: ev.nLepFO_Recl >= 3, 'other' : lambda ev: ev.nLepFO_Recl >= 3}
+    '2lss'       : {'sigll' : lambda ev: ev.GenV1DecayMode>1 and ev.GenV2DecayMode>1 and ev.nLepClean_Recl>=2 and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1, 
+                    'ttv'   : lambda ev: ev.nLepClean_Recl>=2 and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1,
+                    'tt'    : lambda ev: ev.nLepClean_Recl>=2 and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1,
+                    'other' : lambda ev: ev.nLepClean_Recl>=2 and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1},
+    '3l'         : {'sigll' : lambda ev: ev.GenV1DecayMode>1 and ev.GenV2DecayMode>1 and ev.nLepClean_Recl >= 3, 'ttv' : lambda ev: ev.nLepClean_Recl >= 3, 'tt' : lambda ev: ev.nLepClean_Recl >= 3, 'other' : lambda ev: ev.nLepClean_Recl >= 3}
 }
 
 classes = {
@@ -122,7 +125,7 @@ ttvSamples = []
 ttSamples  = []
 othSamples = []
 
-sigSamplesWpWp.extend( ['TJWpWp_SM_2018.root'] )
+sigSamplesWpWp.extend( ['TJWpWp_SM_2018.root','TJWpWp_0p8_2018.root','TJWpWm_SM_2018.root','TJWpWm_0p8_2018.root'] )
 sigSamplesWZ.extend( ['TJWZ_SM_2018.root'] )
 ttvSamples.extend( ['TTWToLNu_fxfx.root']+['TTZToLLNuNu_amc_part%d.root'%i for i in range(1,2)] )
 ttSamples.extend( ['TTJets_SingleLeptonFromT.root','TTJets_SingleLeptonFromTbar.root']+['TTJets_DiLepton_part%d.root'%i for i in range(1,2)])
@@ -134,7 +137,7 @@ def toNumpy(featureList,maxEntries,task):
     fil, typs = task
     path = os.path.dirname(fil)
     fname = os.path.basename(fil)
-    friendpath = path+'/3_recleaner_v0/'
+    friendpath = path+'/3_recleaner_vMarcAllVars/'
     print('List of features for', featureList + eval('featureList'))
     tfile = r.TFile(fil); ttree = tfile.Events; ttree.AddFriend('Friends',friendpath+fname.replace('.root','_Friend.root'))
     results = {}
@@ -188,7 +191,7 @@ if __name__ == "__main__":
 
     featureList = commonFeatureList
     if options.channel=='3l':
-        featureList += ["lep3_conePt","lep3_eta","lep3_phi"]
+        featureList += ["lep3_pt","lep3_eta","lep3_phi"]
         for cl,vals in classes.iteritems():
             vals['cut'] = cuts[options.channel][cl]
             

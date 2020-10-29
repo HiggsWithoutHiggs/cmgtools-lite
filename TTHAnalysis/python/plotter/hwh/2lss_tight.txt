@@ -3,7 +3,7 @@ alwaystrue: 1
 filters: Flag_goodVertices && Flag_globalSuperTightHalo2016Filter && Flag_HBHENoiseFilter && Flag_HBHENoiseIsoFilter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_BadPFMuonFilter && (Flag_ecalBadCalibFilter || (year == 2016))  $DATA{&& Flag_eeBadScFilter}
 cleanup: minMllAFAS > 12
 dilep: nLepClean_Recl>=2
-pt80230: LepClean_Recl_pt[0]>80 && LepClean_Recl_pt[1]>30
+pt5030: LepClean_Recl_pt[0]>50 && LepClean_Recl_pt[1]>30
 #htllv100 : LepClean_Recl_pt[0]+LepClean_Recl_pt[1]+MET_pt > 100
 ##TT: LepClean_Recl_isLepTight[0] && LepClean_Recl_isLepTight[1]
 ##exclusive: nLepTight_Recl<=2

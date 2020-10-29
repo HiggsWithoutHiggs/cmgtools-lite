@@ -79,7 +79,7 @@ int hwh_catIndex_2lss_MVA(int LepGood1_pdgId, int LepGood2_pdgId, float tjvv, fl
   }
   
   int idx = hwh_catIndex_2lss(LepGood1_pdgId, LepGood2_pdgId, tjvv,ttv, tt,other); 
-
+  
   TString binLabel = hwhbin2lsslabels[idx-1];
   
   float mvavar = 0;
