@@ -103,18 +103,31 @@ features = {
     }
 
 cuts = {
-    '2lss'       : {'sigll' : lambda ev: ev.GenV1DecayMode>1 and ev.GenV2DecayMode>1 and ev.nLepClean_Recl>=2 and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1, 
-                    'ttv'   : lambda ev: ev.nLepClean_Recl>=2 and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1,
-                    'tt'    : lambda ev: ev.nLepClean_Recl>=2 and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1,
-                    'other' : lambda ev: ev.nLepClean_Recl>=2 and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1},
-    '3l'         : {'sigll' : lambda ev: ev.GenV1DecayMode>1 and ev.GenV2DecayMode>1 and ev.nLepClean_Recl >= 3, 'ttv' : lambda ev: ev.nLepClean_Recl >= 3, 'tt' : lambda ev: ev.nLepClean_Recl >= 3, 'other' : lambda ev: ev.nLepClean_Recl >= 3}
+    '2lss'       : {'sigll' : lambda ev: ev.GenV1DecayMode>1 and ev.GenV2DecayMode>1 and ev.nLepClean_Recl>=2 and (ev.LepClean_Recl_pt[0]+ev.LepClean_Recl_pt[1]+ev.MET_pt>250) and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1, 
+                    'ttv'   : lambda ev: ev.nLepClean_Recl>=2 and (ev.LepClean_Recl_pt[0]+ev.LepClean_Recl_pt[1]+ev.MET_pt>250) and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1,
+                    'tt'    : lambda ev: ev.nLepClean_Recl>=2 and (ev.LepClean_Recl_pt[0]+ev.LepClean_Recl_pt[1]+ev.MET_pt>250) and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1,
+                    'other' : lambda ev: ev.nLepClean_Recl>=2 and (ev.LepClean_Recl_pt[0]+ev.LepClean_Recl_pt[1]+ev.MET_pt>250) and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1},
+
+    '3l'         : {'sigll' : lambda ev: ev.GenV1DecayMode>1 and ev.GenV2DecayMode>1 and ev.nLepClean_Recl >= 3 and ev.LepClean_Recl_pt[0]>70 and ev.LepClean_Recl_pt[1]>40 and ev.LepClean_Recl_pt[0]>10 and ev.nBJetMedium25_Recl>=1,
+                    'ttv'   : lambda ev: ev.nLepClean_Recl >= 3 and ev.LepClean_Recl_pt[0]>60 and ev.LepClean_Recl_pt[1]>30 and ev.LepClean_Recl_pt[0]>10 and ev.nBJetMedium25_Recl>=1, 
+                    'tt'    : lambda ev: ev.nLepClean_Recl >= 3 and ev.LepClean_Recl_pt[0]>60 and ev.LepClean_Recl_pt[1]>30 and ev.LepClean_Recl_pt[0]>10 and ev.nBJetMedium25_Recl>=1, 
+                    'other' : lambda ev: ev.nLepClean_Recl >= 3 and ev.LepClean_Recl_pt[0]>60 and ev.LepClean_Recl_pt[1]>30 and ev.LepClean_Recl_pt[0]>10 and ev.nBJetMedium25_Recl>=1 
+                }
 }
 
-classes = {
+classes = {}
+
+classes_2lss = {
     'sigll'      : { 'cut': cuts['2lss']['sigll'], 'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
     'ttv'        : { 'cut': cuts['2lss']['ttv'],   'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
     'tt'         : { 'cut': cuts['2lss']['tt'],    'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
     'other'      : { 'cut': cuts['2lss']['other'], 'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
+}
+
+classes_3l = {
+    'sigll'      : { 'cut': cuts['3l']['sigll'], 'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
+    'tt'         : { 'cut': cuts['3l']['tt'],    'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
+    'other'      : { 'cut': cuts['3l']['other'], 'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
 }
 
 sampleDir='/eos/cms/store/cmst3/group/wmass/secret/NanoTrees_HWH_2lskim_170920/2018/'
@@ -126,7 +139,7 @@ ttSamples  = []
 othSamples = []
 
 sigSamplesWpWp.extend( ['TJWpWp_SM_2018.root','TJWpWp_0p8_2018.root','TJWpWm_SM_2018.root','TJWpWm_0p8_2018.root'] )
-sigSamplesWZ.extend( ['TJWZ_SM_2018.root'] )
+sigSamplesWZ.extend( ['TJWZ_SM_2018.root','TJWZ_0p8_2018.root'] )
 ttvSamples.extend( ['TTWToLNu_fxfx.root']+['TTZToLLNuNu_amc_part%d.root'%i for i in range(1,2)] )
 ttSamples.extend( ['TTJets_SingleLeptonFromT.root','TTJets_SingleLeptonFromTbar.root']+['TTJets_DiLepton_part%d.root'%i for i in range(1,2)])
 othSamples.extend( ['WWTo2L2Nu.root','WZTo3LNu_fxfx.root','ZZTo4L.root'] )
@@ -173,21 +186,28 @@ if __name__ == "__main__":
 
     tasks = []
     print('Setting up the tasks')
-    sigSamples = sigSamplesWpWp if options.channel=='2lss' else sigSamplesWZ
+    sigSamples = sigSamplesWpWp if options.channel=='2lss' else sigSamplesWpWp+sigSamplesWZ
     for samp in sigSamples:
         tasks.append( (sampleDir+'/'+samp, ['sigll']) )
 
-    for samp in ttvSamples:
-        tasks.append( (sampleDir+'/'+samp, ['ttv']) )
-
-    for samp in ttSamples:
-        tasks.append( (sampleDir+'/'+samp, ['tt']) )
+    if options.channel=='2lss':
+        for samp in ttvSamples:
+            tasks.append( (sampleDir+'/'+samp, ['ttv']) )
+        for samp in ttSamples:
+            tasks.append( (sampleDir+'/'+samp, ['tt']) )
+        for samp in othSamples:
+            tasks.append( (sampleDir+'/'+samp, ['other']) )
+    else:
+        for samp in ttvSamples+ttSamples:
+            tasks.append( (sampleDir+'/'+samp, ['tt']) )
+        for samp in othSamples:
+            tasks.append( (sampleDir+'/'+samp, ['other']) )
     
-    for samp in othSamples:
-        tasks.append( (sampleDir+'/'+samp, ['other']) )
     
     print('Numpy conversion. It will take time...')
     print("max entries = ",options.maxEntries)
+
+    classes = classes_2lss if options.channel=='2lss' else classes_3l
 
     featureList = commonFeatureList
     if options.channel=='3l':
@@ -202,7 +222,7 @@ if __name__ == "__main__":
 
     print('Now putting everything together')
 
-    types = ['sigll', 'ttv', 'tt', 'other']
+    types = ['sigll', 'ttv', 'tt', 'other'] if options.channel=='2lss' else ['sigll', 'tt', 'other']
     for result in results: 
         for ty in types:
             if ty+'_train' in result:

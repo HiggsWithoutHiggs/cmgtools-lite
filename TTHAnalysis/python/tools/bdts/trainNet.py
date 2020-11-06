@@ -10,24 +10,24 @@ from keras.backend import tensorflow_backend as K
 from keras import optimizers
 
 
-def getCompiledModelA(nvars):
+def getCompiledModelA(nvars,nnodes):
     # optimal so far ( 0.980, 0.966)
     model = Sequential()
     model.add(Dense(30,input_dim=nvars, activation='relu'))
     model.add(Dense(10, activation='relu'))
-    model.add(Dense(4, activation='softmax'))
+    model.add(Dense(nnodes, activation='softmax'))
     adam = optimizers.adam(lr=1e-4) 
     model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy','categorical_crossentropy'])
     return model
 
-def getCompiledModelB(nvars):
+def getCompiledModelB(nvars,nnodes):
     model = Sequential()
     model.add(Dense(30,input_dim=nvars, activation='relu'))
     model.add(Dropout(0.4))
     model.add(Dense(10, activation='relu'))
     model.add(Dropout(0.4))
     model.add(Dense(10, activation='relu'))
-    model.add(Dense(4, activation='softmax'))
+    model.add(Dense(nnodes, activation='softmax'))
     adam = optimizers.adam(lr=1e-4) 
     model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy','categorical_crossentropy'])
     return model
@@ -85,12 +85,15 @@ if __name__ == "__main__":
     print(sums)
 
     sig = sums[0]
-    bkg = sums[1] + sums[2] + sums[3]
+    bkg = sums[1] + sums[2]
+    if options.channel=='2lss': bkg += sums[3]
 
     class_weight = { 0 : float((sig+bkg)/sig),
                      1 : float((sig+bkg)/bkg),
-                     2 : float((sig+bkg)/bkg),
-                     3 : float((sig+bkg)/bkg)}
+                     2 : float((sig+bkg)/bkg)}
+    if  options.channel=='2lss':
+        class_weight.update( {3 : float((sig+bkg)/bkg)} )
+
     print ('weights will be', class_weight)
 
     with tf.Session(config=tf.ConfigProto(
@@ -98,10 +101,11 @@ if __name__ == "__main__":
             inter_op_parallelism_threads=50)) as sess:
         K.set_session(sess)
         
-        model = getCompiledModelA(nvars)
-        #model = getCompiledModelB(nvars)
+        nnodes = 4 if options.channel=='2lss' else 3
+        model = getCompiledModelA(nvars,nnodes)
+        #model = getCompiledModelB(nvars,nnodes)
 
-        history = model.fit( data['train_x'], data['train_y'], epochs=10, batch_size=128, validation_data=(data['test_x'], data['test_y']), class_weight=class_weight)
+        history = model.fit( data['train_x'], data['train_y'], epochs=100, batch_size=100, validation_data=(data['test_x'], data['test_y']), class_weight=class_weight)
 
         modelname = os.getcwd()+'/'+os.path.basename(options.outfile).split('.')[0]
         # keras model (H5)
