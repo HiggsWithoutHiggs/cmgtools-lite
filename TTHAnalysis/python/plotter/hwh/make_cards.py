@@ -47,7 +47,7 @@ OPTIONS="{OPTIONS} -L ttH-multilepton/functionsTTH.cc -L hwh/functionsHWH.cc {PR
 CATPOSTFIX=""
 
 FUNCTION_2L="hwh_catIndex_2lss_MVA(LepClean_Recl1_pdgId,LepClean_Recl2_pdgId,DNN_2lss_predictions_tjvv,DNN_2lss_predictions_ttV,DNN_2lss_predictions_tt,DNN_2lss_predictions_other)"
-FUNCTION_3L="ttH_catIndex_3l_MVA(DNN_3l_predictions_ttH,DNN_3l_predictions_tH,DNN_3l_predictions_rest,LepClean_Recl1_pdgId,LepClean_Recl2_pdgId,LepClean_Recl3_pdgId,nBJetMedium25)"
+FUNCTION_3L="hwh_catIndex_3l_MVA(DNN_2lss_predictions_tjvv,DNN_2lss_predictions_ttV,DNN_2lss_predictions_tt,DNN_2lss_predictions_other,LepClean_Recl1_pdgId,LepClean_Recl2_pdgId,LepClean_Recl3_pdgId,mZ1)"
 
 ONEBIN="1 1,0.5,1.5"
 MCASUFFIX="mc"
@@ -67,11 +67,11 @@ if REGION == "2lss":
             
 
 if REGION == "3l":
-    OPT_3L='{T3L} {OPTIONS} -W "L1PreFiringWeight_Nom*puWeight*btagSF_shape*triggerSF_ttH(LepGood1_pdgId, LepGood1_conePt, LepGood2_pdgId, LepGood2_conePt, 3, year)*leptonSF_3l"'.format(T3L=T3L, OPTIONS=OPTIONS)
+    OPT_3L='{T3L} {OPTIONS} -W "puWeight"'.format(T3L=T3L, OPTIONS=OPTIONS)
     CATPOSTFIX=""
-    CATBINS="[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5,14.5,15.5,16.5,17.5,18.5,19.5,20.5,21.5,22.5,23.5,24.5,25.5,26.5,27.5,28.5,29.5,30.5,31.5,32.5,33.5,34.5]"
-    RANGES = '[1,6,10,17,20,21,25,26,30,31,34,35]'
-    NAMES  = ','.join( '%s_%s'%(x,YEAR) for x in ['ttH_bl','ttH_bt','tH_bl','tH_bt','rest_eee','rest_eem_bl','rest_eem_bt','rest_emm_bl','rest_emm_bt','rest_mmm_bl','rest_mmm_bt'])
-    TORUN = 'python {SCRIPT} {DOFILE} ttH-multilepton/mca-3l-{MCASUFFIX}{MCAOPTION}.txt ttH-multilepton/3l_tight_legacy.txt "{FUNCTION_3L}" "{CATBINS}" {SYSTS} {OPT_3L} --binname ttH_3l_0tau --year {YEAR} --categorize-by-ranges "{RANGES}" "{NAMES}"'.format(SCRIPT=SCRIPT, DOFILE=DOFILE,MCASUFFIX=MCASUFFIX,MCAOPTION=MCAOPTION,FUNCTION_3L=FUNCTION_3L,CATBINS=CATBINS,YEAR=YEAR, SYSTS=SYSTS, OPT_3L=OPT_3L,RANGES=RANGES, NAMES=NAMES)
+    CATBINS="[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5,14.5,15.5,16.5,17.5,18.5,19.5,20.5,21.5,22.5,23.5,24.5,25.5,26.5,27.5,28.5,29.5,30.5,31.5,32.5,33.5,34.5,35.5,36.5,37.5,38.5,39.5,40.5,41.5,42.5,43.5,44.5,45.5,46.5,47.5,48.5,49.5,50.5,51.5,52.5,53.5,54.5,55.5,56.5,57.5,58.5,59.5,60.5,61.5,62.5,63.5,64.5,65.5,66.5,67.5,68.5,69.5,70.5]"
+    RANGES = '[1,8,15,22,29,36,43,50,57,64,71]'
+    NAMES  = ','.join( '%s_%s'%(x,YEAR) for x in ['tjVV_nr','tjVV_r','eee_Othernode','eee_ttnode','eem_Othernode','eem_ttnode','emm_Othernode','emm_ttnode','mmm_Othernode','mmm_ttnode'])
+    TORUN = 'python {SCRIPT} {DOFILE} hwh/mca-3l-{MCASUFFIX}{MCAOPTION}.txt hwh/3l_tight.txt "{FUNCTION_3L}" "{CATBINS}" {SYSTS} {OPT_3L} --binname hwh_3l --year {YEAR} --categorize-by-ranges "{RANGES}" "{NAMES}"'.format(SCRIPT=SCRIPT, DOFILE=DOFILE,MCASUFFIX=MCASUFFIX,MCAOPTION=MCAOPTION,FUNCTION_3L=FUNCTION_3L,CATBINS=CATBINS,YEAR=YEAR, SYSTS=SYSTS, OPT_3L=OPT_3L,RANGES=RANGES, NAMES=NAMES)
     print submit.format(command=TORUN)
 

@@ -13,18 +13,18 @@
 int hwh_catIndex_2lss(int LepGood1_pdgId, int LepGood2_pdgId, float tjvv, float ttv, float tt, float other)
 {
 
-//2lss_ee_tjvv
-//2lss_ee_other
-//2lss_ee_ttv
-//2lss_ee_tt
-//2lss_em_tjvv
-//2lss_em_other
-//2lss_em_ttv
-//2lss_em_tt
-//2lss_mm_tjvv
-//2lss_mm_other
-//2lss_mm_ttv
-//2lss_mm_tt  
+//2lss_ee_tjvv   1
+//2lss_ee_other  2
+//2lss_ee_ttv    3
+//2lss_ee_tt     4
+//2lss_em_tjvv   5
+//2lss_em_other  6
+//2lss_em_ttv    7
+//2lss_em_tt     8
+//2lss_mm_tjvv   9
+//2lss_mm_other  10
+//2lss_mm_ttv    11
+//2lss_mm_tt     12
   int flch = 0;
   int procch = 0;
 
@@ -170,105 +170,92 @@ int hwh_catIndex_2lss_plots(int LepGood1_pdgId, int LepGood2_pdgId, float tjvv, 
   else 
     cout << "It shouldnt be here" << endl;
 
-
   return hwhbinHistos2lss_plots[binLabel]->FindBin( mvavar ) + offset;
     
-
 }
 
 
-
-
-int hwh_catIndex_3l(float tjvv, float ttv, float tt, float other, int lep1_pdgId, int lep2_pdgId, int lep3_pdgId, int nBMedium )
+int hwh_catIndex_3l(float tjvv, float tt, float other, int lep1_pdgId, int lep2_pdgId, int lep3_pdgId, float mZ1 )
 {
 
   int sumpdgId = abs(lep1_pdgId)+abs(lep2_pdgId)+abs(lep3_pdgId);
   int flch = 0;
   int procch = 0;
 
-  if (sumpdgId == 33){ // eee 
-    flch = 0;
+  if (tjvv >= tt && tjvv >= other) {
+    if (abs(mZ1-91.2) > 10)
+      return 1; // VV_nr
+    else
+      return 2; // VV_r
   }
-  else if (sumpdgId == 35){ // eem
-    flch = 1;
-  }
-  else if (sumpdgId == 37){ // emm
-    flch = 2;
-  }
-  else if (sumpdgId == 39){ // mmm
-    flch = 3;
-  }
-  else
-    cout << "[3l]: It shouldnt be here. pdgids are " << abs(lep1_pdgId) << " " <<  abs(lep2_pdgId) << " " << abs(lep3_pdgId)  << endl;
-  
-  if (tjvv >= ttv && tjvv >= tt && tjvv >= other)
-    procch = 0;
-  else if (other >= tjvv && other >= ttv && other >= tt)
-    procch = 1;
-  else if (ttv >= tjvv && ttv >= other && ttv >= tt)
-    procch = 2;
-  else if (tt >= tjvv && tt >= other && tt >= ttv)
-    procch = 3;
-  else 
-    cout << "[3l]: It shouldnt be here. DNN scores are " << tjvv << " " << other << " " << ttv << " " << tt << endl;
+  else {
+    if (sumpdgId == 33){ // eee 
+      flch = 0;
+    }
+    else if (sumpdgId == 35){ // eem
+      flch = 1;
+    }
+    else if (sumpdgId == 37){ // emm
+      flch = 2;
+    }
+    else if (sumpdgId == 39){ // mmm
+      flch = 3;
+    }
+    else
+      cout << "[3l]: It shouldnt be here. pdgids are " << abs(lep1_pdgId) << " " <<  abs(lep2_pdgId) << " " << abs(lep3_pdgId)  << endl;
+    if (other >= tjvv && other >= tt)
+      procch = 0;
+    else if (tt >= tjvv && tt >= other)
+      procch = 1;
+    else 
+      cout << "[3l]: It shouldnt be here. DNN scores are " << tjvv << " " << other << " " << tt << endl;
       
-  return flch*4+procch+1;
+    return flch*2+procch+3;
+  }
+
+  cout << "[hwh_catIndex_3l]: It should not be here" << endl;
+  return -1;
 
 }
 
 std::vector<TString> hwhbin3llabels = {
-  "eee_tjVVnode","eee_Othernode","eee_ttVnode","eee_ttnode",
-  "eem_tjVVnode","eem_Othernode","eem_ttVnode","eem_ttnode",
-  "emm_tjVVnode","emm_Othernode","emm_ttVnode","emm_ttnode",
-  "mmm_tjVVnode","mmm_Othernode","mmm_ttVnode","mmm_ttnode"
+  "tjVV_nr","tjVV_r",
+  "eee_Othernode","eee_ttnode",
+  "eem_Othernode","eem_ttnode",
+  "emm_Othernode","emm_ttnode",
+  "mmm_Othernode","mmm_ttnode"
 };
-
-int hwh_catIndex_3l_node(float tjvv, float ttv, float tt, float other ){
-  // for the moment, the same of the 2lss nodes
-  return hwh_2lss_node(tjvv,ttv,tt,other);
-}
 
 std::map<TString, TH1F*> hwhbinHistos3l;
 std::map<TString, int> hwhbins3lcumul;
-TFile* f3lHwhbins;
+TFile* f3lHwhBins;
 
-/// BEWARE !!!!!!  NOT YET IMPLEMENTED !!!!
-// int hwh_catIndex_3l_plots(float ttH, float tH, float rest, int lep1_pdgId, int lep2_pdgId, int lep3_pdgId, int nBMedium )
-// {
-//   if (!f3lBins){
-//     f3lBins=TFile::Open("../../data/kinMVA/binning_3l.root");
-//     int count=0;
-//     for (auto label : bin3llabels){
-//       binHistos3l[label] = (TH1F*) f3lBins->Get(label);
-//       bins3lcumul[label] = count;
-//       count += binHistos3l[label]->GetNbinsX();
-//     }
-//   }
+int hwh_catIndex_3l_MVA(float tjvv, float tt, float other, int lep1_pdgId, int lep2_pdgId, int lep3_pdgId, float mZ1 )
+{
 
-//   int offset =0;
-//   int pdgSum = abs(lep1_pdgId) + abs(lep2_pdgId) + abs(lep3_pdgId);
+  if (!f3lHwhBins){
+    // for the moment take for all the same binning: [0,0.43,0.47,0.5,0.55,0.61,0.71,1.0]
+    f3lHwhBins=TFile::Open("../../data/kinMVA/binning_3l.root");
+    int count=0;
+    for (auto label : hwhbin3llabels){
+      hwhbinHistos3l[label] = (TH1F*) f3lHwhBins->Get("tH_bl"); //(label);
+      hwhbins3lcumul[label] = count;
+      count += hwhbinHistos3l[label]->GetNbinsX();
+    }
+  }
+  TString binLabel = hwhbin3llabels[hwh_catIndex_3l(tjvv,tt,other,lep1_pdgId,lep2_pdgId,lep3_pdgId,mZ1)-1];
+  float mvas[] = { tjvv, tt, other };
+  float mvavar = *std::max_element( mvas, mvas+3 );
+  return hwhbinHistos3l[binLabel]->FindBin( mvavar ) + hwhbins3lcumul[binLabel];
+  
+  cout << "[hwh_catIndex_3l_MVA]: It should not be here "<< tjvv << " " << tt << " " << other << endl;
+  return -1;
 
-//   if (ttH_catIndex_3l_node(ttH,tH,rest) == 0){
-//     if (nBMedium >= 2) offset=5;
-//   }
-//   else if (ttH_catIndex_3l_node(ttH,tH,rest) == 1){
-//     if (nBMedium >= 2) offset=7;
-//   }
-//   else{
-//     if (nBMedium  < 2){
-//       if (pdgSum == 35) offset = 1;
-//       else if (pdgSum == 37) offset=1+4;
-//       else if (pdgSum == 39) offset=1+4+4;
-//     }
-//     else{
-//       if (pdgSum == 35) offset = 1+4+4+3;
-//       if (pdgSum == 37) offset = 1+4+4+3+1;
-//       if (pdgSum == 39) offset = 1+4+4+3+1+1;
-//     }
-//   }
-//   TString binLabel = bin3llabels[ttH_catIndex_3l(ttH,tH,rest,lep1_pdgId,lep2_pdgId,lep3_pdgId,nBMedium)-1];
-//   float mvas[] = { ttH, tH, rest };
-//   float mvavar = *std::max_element( mvas, mvas+3 );
-//   return binHistos3l[binLabel]->FindBin( mvavar ) + offset;
+}
 
-// }
+
+int hwh_catIndex_3l_node(float tjvv, float tt, float other ){
+  // for the moment, the same of the 2lss nodes
+  return hwh_2lss_node(tjvv,-1,tt,other);
+}
+
