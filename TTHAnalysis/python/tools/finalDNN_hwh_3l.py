@@ -60,18 +60,18 @@ class finalDNN_3l(Module):
 
 
     def getVarsForVariation(self, var ): 
-        return {     "lep1_pt"          : lambda ev : ev.LepClean_Recl_pt[0] if ev.nLepFO_Recl >= 1 else -9,
-                     "lep1_eta"         : lambda ev : ev.LepClean_Recl_eta[0] if ev.nLepFO_Recl >= 1 else 0,
-                     "lep1_phi"         : lambda ev : ev.LepClean_Recl_phi[0] if ev.nLepFO_Recl >= 1 else -9,
-                     "lep1_charge"      : lambda ev : ev.LepClean_Recl_charge[0] if ev.nLepFO_Recl >= 1 else -9,
+        return {     "lep1_pt"          : lambda ev : ev.LepClean_Recl_pt[0] if ev.nLepClean_Recl >= 1 else -9,
+                     "lep1_eta"         : lambda ev : ev.LepClean_Recl_eta[0] if ev.nLepClean_Recl >= 1 else 0,
+                     "lep1_phi"         : lambda ev : ev.LepClean_Recl_phi[0] if ev.nLepClean_Recl >= 1 else -9,
+                     "lep1_charge"      : lambda ev : ev.LepClean_Recl_charge[0] if ev.nLepClean_Recl >= 1 else -9,
                      
-                     "lep2_pt"          : lambda ev : ev.LepClean_Recl_pt[1] if ev.nLepFO_Recl >= 2 else -9,
-                     "lep2_eta"         : lambda ev : ev.LepClean_Recl_eta[1] if ev.nLepFO_Recl >= 2 else -9,
-                     "lep2_phi"         : lambda ev : ev.LepClean_Recl_phi[1] if ev.nLepFO_Recl >= 2 else -9,
+                     "lep2_pt"          : lambda ev : ev.LepClean_Recl_pt[1] if ev.nLepClean_Recl >= 2 else -9,
+                     "lep2_eta"         : lambda ev : ev.LepClean_Recl_eta[1] if ev.nLepClean_Recl >= 2 else -9,
+                     "lep2_phi"         : lambda ev : ev.LepClean_Recl_phi[1] if ev.nLepClean_Recl >= 2 else -9,
 
-                     "lep3_pt"          : lambda ev : ev.LepClean_Recl_pt[2] if ev.nLepFO_Recl >= 3 else -9,
-                     "lep3_eta"         : lambda ev : ev.LepClean_Recl_eta[2] if ev.nLepFO_Recl >= 3 else -9,
-                     "lep3_phi"         : lambda ev : ev.LepClean_Recl_phi[2] if ev.nLepFO_Recl >= 3 else -9,
+                     "lep3_pt"          : lambda ev : ev.LepClean_Recl_pt[2] if ev.nLepClean_Recl >= 3 else -9,
+                     "lep3_eta"         : lambda ev : ev.LepClean_Recl_eta[2] if ev.nLepClean_Recl >= 3 else -9,
+                     "lep3_phi"         : lambda ev : ev.LepClean_Recl_phi[2] if ev.nLepClean_Recl >= 3 else -9,
                      
                      "maxeta"           : lambda ev : max( [abs(ev.LepClean_Recl_eta[0]), abs(ev.LepClean_Recl_eta[1])]),
                      "Dilep_pdgId"      : lambda ev : (28 - abs(ev.LepClean_Recl_pdgId[0]) - abs(ev.LepClean_Recl_pdgId[1]))/2,

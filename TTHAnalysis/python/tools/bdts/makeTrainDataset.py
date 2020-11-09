@@ -57,18 +57,22 @@ commonFeatureList = [
 
 features = {
 
-    "lep1_pt"      : lambda ev : ev.LepClean_Recl_pt[0] if getattr(ev,'nLepClean_Recl') >= 1 else -9,
+    "lep1_pt"          : lambda ev : ev.LepClean_Recl_pt[0] if getattr(ev,'nLepClean_Recl') >= 1 else -9,
     "lep1_eta"         : lambda ev : ev.LepClean_Recl_eta[0] if getattr(ev,'nLepClean_Recl') >= 1 else 0,
     "lep1_phi"         : lambda ev : ev.LepClean_Recl_phi[0] if getattr(ev,'nLepClean_Recl') >= 1 else -9,
     "lep1_charge"      : lambda ev : ev.LepClean_Recl_charge[0] if getattr(ev,'nLepClean_Recl') >= 1 else -9,
 
-    "lep2_pt"      : lambda ev : ev.LepClean_Recl_pt[1] if getattr(ev,'nLepClean_Recl') >= 2 else -9,
+    "lep2_pt"          : lambda ev : ev.LepClean_Recl_pt[1] if getattr(ev,'nLepClean_Recl') >= 2 else -9,
     "lep2_eta"         : lambda ev : ev.LepClean_Recl_eta[1] if getattr(ev,'nLepClean_Recl') >= 2 else -9,
     "lep2_phi"         : lambda ev : ev.LepClean_Recl_phi[1] if getattr(ev,'nLepClean_Recl') >= 2 else -9,
 
-    "lep3_pt"      : lambda ev : ev.LepClean_Recl_pt[2] if getattr(ev,'nLepClean_Recl') >= 3 else -9,
+    "lep3_pt"          : lambda ev : ev.LepClean_Recl_pt[2] if getattr(ev,'nLepClean_Recl') >= 3 else -9,
     "lep3_eta"         : lambda ev : ev.LepClean_Recl_eta[2] if getattr(ev,'nLepClean_Recl') >= 3 else -9,
     "lep3_phi"         : lambda ev : ev.LepClean_Recl_phi[2] if getattr(ev,'nLepClean_Recl') >= 3 else -9,
+
+    "lep4_pt"          : lambda ev : ev.LepClean_Recl_pt[3] if getattr(ev,'nLepClean_Recl') >= 4 else -9,
+    "lep4_eta"         : lambda ev : ev.LepClean_Recl_eta[3] if getattr(ev,'nLepClean_Recl') >= 4 else -9,
+    "lep4_phi"         : lambda ev : ev.LepClean_Recl_phi[3] if getattr(ev,'nLepClean_Recl') >= 4 else -9,
 
     "maxeta"           : lambda ev : max( [abs(ev.LepClean_Recl_eta[0]), abs(ev.LepClean_Recl_eta[1])]) if getattr(ev,'nLepClean_Recl') >=2 else -9,
     "Dilep_pdgId"      : lambda ev : (28 - abs(ev.LepClean_Recl_pdgId[0]) - abs(ev.LepClean_Recl_pdgId[1]))/2 if getattr(ev,'nLepClean_Recl') >=2 else -9,
@@ -108,10 +112,13 @@ cuts = {
                     'tt'    : lambda ev: ev.nLepClean_Recl>=2 and (ev.LepClean_Recl_pt[0]+ev.LepClean_Recl_pt[1]+ev.MET_pt>250) and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1,
                     'other' : lambda ev: ev.nLepClean_Recl>=2 and (ev.LepClean_Recl_pt[0]+ev.LepClean_Recl_pt[1]+ev.MET_pt>250) and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1},
 
-    '3l'         : {'sigll' : lambda ev: ev.GenV1DecayMode>1 and ev.GenV2DecayMode>1 and ev.nLepClean_Recl >= 3 and ev.LepClean_Recl_pt[0]>70 and ev.LepClean_Recl_pt[1]>40 and ev.LepClean_Recl_pt[0]>10 and ev.nBJetMedium25_Recl>=1,
-                    'ttv'   : lambda ev: ev.nLepClean_Recl >= 3 and ev.LepClean_Recl_pt[0]>60 and ev.LepClean_Recl_pt[1]>30 and ev.LepClean_Recl_pt[0]>10 and ev.nBJetMedium25_Recl>=1, 
-                    'tt'    : lambda ev: ev.nLepClean_Recl >= 3 and ev.LepClean_Recl_pt[0]>60 and ev.LepClean_Recl_pt[1]>30 and ev.LepClean_Recl_pt[0]>10 and ev.nBJetMedium25_Recl>=1, 
-                    'other' : lambda ev: ev.nLepClean_Recl >= 3 and ev.LepClean_Recl_pt[0]>60 and ev.LepClean_Recl_pt[1]>30 and ev.LepClean_Recl_pt[0]>10 and ev.nBJetMedium25_Recl>=1 
+    '3l'         : {'sigll' : lambda ev: ev.nLepClean_Recl >= 3 and ev.LepClean_Recl_pt[0]>60 and ev.LepClean_Recl_pt[1]>30 and ev.LepClean_Recl_pt[2]>10 and ev.nBJetMedium25_Recl>=1,
+                    'tt'    : lambda ev: ev.nLepClean_Recl >= 3 and ev.LepClean_Recl_pt[0]>60 and ev.LepClean_Recl_pt[1]>30 and ev.LepClean_Recl_pt[2]>10 and ev.nBJetMedium25_Recl>=1, 
+                    'other' : lambda ev: ev.nLepClean_Recl >= 3 and ev.LepClean_Recl_pt[0]>60 and ev.LepClean_Recl_pt[1]>30 and ev.LepClean_Recl_pt[2]>10 and ev.nBJetMedium25_Recl>=1,
+                },
+    '4l'         : {'sigll' : lambda ev: ev.nLepClean_Recl >= 4 and ev.LepClean_Recl_pt[0]>70 and ev.LepClean_Recl_pt[1]>50 and ev.LepClean_Recl_pt[2]>40 and ev.LepClean_Recl_pt[3]>10 and ev.nBJetMedium25_Recl>=1,
+                    'tt'    : lambda ev: ev.nLepClean_Recl >= 4 and ev.LepClean_Recl_pt[0]>70 and ev.LepClean_Recl_pt[1]>50 and ev.LepClean_Recl_pt[2]>40 and ev.LepClean_Recl_pt[3]>10 and ev.nBJetMedium25_Recl>=1,
+                    'other' : lambda ev: ev.nLepClean_Recl >= 4 and ev.LepClean_Recl_pt[0]>70 and ev.LepClean_Recl_pt[1]>50 and ev.LepClean_Recl_pt[2]>40 and ev.LepClean_Recl_pt[3]>10 and ev.nBJetMedium25_Recl>=1,
                 }
 }
 
@@ -130,16 +137,20 @@ classes_3l = {
     'other'      : { 'cut': cuts['3l']['other'], 'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
 }
 
+classes_4l = classes_3l
+
 sampleDir='/eos/cms/store/cmst3/group/wmass/secret/NanoTrees_HWH_2lskim_170920/2018/'
 
 sigSamplesWpWp = []
 sigSamplesWZ = []
+sigSamplesZZ = []
 ttvSamples = []
 ttSamples  = []
 othSamples = []
 
 sigSamplesWpWp.extend( ['TJWpWp_SM_2018.root','TJWpWp_0p8_2018.root','TJWpWm_SM_2018.root','TJWpWm_0p8_2018.root'] )
 sigSamplesWZ.extend( ['TJWZ_SM_2018.root','TJWZ_0p8_2018.root'] )
+sigSamplesZZ.extend( ['TJZZ_SM_2018.root','TJZZ_0p8_2018.root'] )
 ttvSamples.extend( ['TTWToLNu_fxfx.root']+['TTZToLLNuNu_amc_part%d.root'%i for i in range(1,2)] )
 ttSamples.extend( ['TTJets_SingleLeptonFromT.root','TTJets_SingleLeptonFromTbar.root']+['TTJets_DiLepton_part%d.root'%i for i in range(1,2)])
 othSamples.extend( ['WWTo2L2Nu.root','WZTo3LNu_fxfx.root','ZZTo4L.root'] )
@@ -186,7 +197,7 @@ if __name__ == "__main__":
 
     tasks = []
     print('Setting up the tasks')
-    sigSamples = sigSamplesWpWp if options.channel=='2lss' else sigSamplesWpWp+sigSamplesWZ
+    sigSamples = sigSamplesWpWp if options.channel=='2lss' else sigSamplesWpWp+sigSamplesWZ+sigSamplesZZ
     for samp in sigSamples:
         tasks.append( (sampleDir+'/'+samp, ['sigll']) )
 
@@ -214,7 +225,11 @@ if __name__ == "__main__":
         featureList += ["lep3_pt","lep3_eta","lep3_phi"]
         for cl,vals in classes.iteritems():
             vals['cut'] = cuts[options.channel][cl]
-            
+    if options.channel=='4l':
+        featureList += ["lep3_pt","lep3_eta","lep3_phi","lep4_pt","lep4_eta","lep4_phi"]
+        for cl,vals in classes.iteritems():
+            vals['cut'] = cuts[options.channel][cl]
+
     ## lxplus seems to have 10 cores/each
     p =  Pool(min(10,len(sigSamples+ttvSamples+ttSamples+othSamples)))
     func = partial(toNumpy,featureList,options.maxEntries)

@@ -49,7 +49,7 @@ if __name__ == "__main__":
     for ext in ['png','pdf']:
         plt.savefig(outname+'/roc.'+ext)
 
-    nvars = 29 if options.channel=='2lss' else 32
+    nvars = 29 if options.channel=='2lss' else 32 if options.channel=='3l' else 35
     for var in range(nvars):
         together = np.dstack( (x[:,var], y ) )[0]
         

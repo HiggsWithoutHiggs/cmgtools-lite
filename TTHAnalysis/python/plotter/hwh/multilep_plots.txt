@@ -54,3 +54,9 @@ kinMVA_3l_score_max : max(max(DNN_3l_predictions_tjvv,DNN_3l_predictions_other),
 kinMVA_3l_discCats : hwh_catIndex_3l(DNN_3l_predictions_tjvv, DNN_3l_predictions_tt, DNN_3l_predictions_other, LepClean_Recl_pdgId[0], LepClean_Recl_pdgId[1], LepClean_Recl_pdgId[2], mZ1 ) : 6,0.5,6.5 ; XTitle="3l DNN classes"
 kinMVA_3l_catIndex_3l_MVA : hwh_catIndex_3l_MVA(DNN_3l_predictions_tjvv, DNN_3l_predictions_tt, DNN_3l_predictions_other, LepClean_Recl_pdgId[0], LepClean_Recl_pdgId[1], LepClean_Recl_pdgId[2], mZ1 ) : 42,0.5,42.5 ; XTitle="3l DNN mva"
 
+####### 4 LEPTONS SPECIFIC ##########
+4lep_ptl3               : LepClean_Recl_pt[2]                                                        : 28,20.,300.; XTitle="muon p_{T} 3"
+4lep_etal3              : TMath::Abs(LepClean_Recl_eta[2])                                           : 10,0.,2.4; XTitle="muon #eta 3"
+4lep_ptl4               : LepClean_Recl_pt[3]                                                        : 28,20.,300.; XTitle="muon p_{T} 4"
+4lep_etal4              : TMath::Abs(LepClean_Recl_eta[3])                                           : 10,0.,2.4; XTitle="muon #eta 4"
+4lep_ptT                : TJetSel_Recl_pt[0]                                                         : 15,0.,750.  ; XTitle="top jet p_{T}"

@@ -368,6 +368,9 @@ finalDNN2lss = lambda : finalDNN_2lss() # use this for data
 from CMGTools.TTHAnalysis.tools.finalDNN_hwh_3l import finalDNN_3l
 finalDNN3l = lambda : finalDNN_3l() # use this for data
 
+from CMGTools.TTHAnalysis.tools.finalDNN_hwh_4l import finalDNN_4l
+finalDNN4l = lambda : finalDNN_4l() # use this for data
+
 from PhysicsTools.NanoAODTools.postprocessing.modules.btv.btagSFProducer import btagSFProducer
 
 
@@ -438,7 +441,7 @@ from CMGTools.TTHAnalysis.tools.nanoAOD.ttH_gen_reco import ttH_gen_reco
 #
 #from CMGTools.TTHAnalysis.tools.topRecoSemiLept import TopRecoSemiLept
 #topRecoModule = lambda : TopRecoSemiLept(constraints=['kWHadMass','kWLepMass','kTopLepMass','kTopHadMass'])
-eventVarsSequence = [finalDNN2lss,finalDNN3l]
+eventVarsSequence = [finalDNN2lss,finalDNN3l,finalDNN4l]
 
 # example of running event variables
 #python prepareEventVariablesFriendTree.py -j 0 -t NanoAOD --compression ZLIB:3 -I CMGTools.TTHAnalysis.tools.nanoAOD.ttH_modules eventVarsSequence trees/2lskim/2018/ trees/2lskim/2018/5_evtVars_v0/ -N 1000 -d 'TJWZ_SM_2018' -F 'Friends' 'trees/2lskim/2018/3_recleaner_vMarcAllVars/{cname}_Friend.root' -c 0

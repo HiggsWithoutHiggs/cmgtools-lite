@@ -1,12 +1,14 @@
 alwaystrue: 1
-trilep: nLepFO_Recl>=4
-cleanup: minMllAFAS > 12
 trigger: Trigger_3l
+fourlep: nLepClean_Recl>=4
+cleanup: minMllAFAS > 12
 filters: Flag_goodVertices && Flag_globalSuperTightHalo2016Filter && Flag_HBHENoiseFilter && Flag_HBHENoiseIsoFilter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_BadPFMuonFilter && (Flag_ecalBadCalibFilter || (year == 2016))  $DATA{&& Flag_eeBadScFilter}
-pt25151510: LepGood1_conePt>25 && LepGood2_conePt>15 && LepGood3_conePt>15 && LepGood4_conePt>10
-TTTT: LepGood1_isLepTight_Recl && LepGood2_isLepTight_Recl && LepGood3_isLepTight_Recl && LepGood4_isLepTight_Recl
-ele conv cuts: (abs(LepGood1_pdgId)!=11 || (LepGood1_convVeto && LepGood1_lostHits==0)) && (abs(LepGood2_pdgId)!=11 || (LepGood2_convVeto && LepGood2_lostHits==0)) && (abs(LepGood3_pdgId)!=11 || (LepGood3_convVeto && LepGood3_lostHits==0)) && (abs(LepGood4_pdgId)!=11 || (LepGood4_convVeto && LepGood4_lostHits==0))
+pt70504010: LepClean_Recl_pt[0]>70 && LepClean_Recl_pt[1]>50 && LepClean_Recl_pt[2]>40 && LepClean_Recl_pt[3]>10
+#TTTT: LepClean_Recl1_isLepTight_Recl && LepClean_Recl2_isLepTight_Recl && LepClean_Recl3_isLepTight_Recl && LepClean_Recl4_isLepTight_Recl
+#ele conv cuts: (abs(LepClean_Recl1_pdgId)!=11 || (LepClean_Recl1_convVeto && LepClean_Recl1_lostHits==0)) && (abs(LepClean_Recl2_pdgId)!=11 || (LepClean_Recl2_convVeto && LepClean_Recl2_lostHits==0)) && (abs(LepClean_Recl3_pdgId)!=11 || (LepClean_Recl3_convVeto && LepClean_Recl3_lostHits==0)) && (abs(LepClean_Recl4_pdgId)!=11 || (LepClean_Recl4_convVeto && LepClean_Recl4_lostHits==0))
 
-nT: nTJetSel_Recl >= 1
-ptT: TJetSel_Recl_pt[0] > 150
-1fwdj: nLJetSel_Recl >= 1 
+#nT: nTJetSel_Recl >= 1
+#1fwdj: nLJetSel_Recl >= 1 
+
+1B: nBJetMedium25_Recl >= 1
+
