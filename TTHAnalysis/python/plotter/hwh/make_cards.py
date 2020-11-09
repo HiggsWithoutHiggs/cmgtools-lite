@@ -26,7 +26,7 @@ else:
 OPTIONS=" --tree NanoAOD --s2v -j {J} -l {LUMI} -f --WA prescaleFromSkim --split-factor=-1 ".format(LUMI=LUMI,J=nCores)
 os.system("test -d cards/{OUTNAME} || mkdir -p cards/{OUTNAME}".format(OUTNAME=OUTNAME))
 OPTIONS="{OPTIONS} --od cards/{OUTNAME} ".format(OPTIONS=OPTIONS, OUTNAME=OUTNAME)
-T2L="-P {ORIGIN}/NanoTrees_HWH_2lskim_170920/{YEAR} --Fs '{{P}}/3_recleaner_vMarcAllVars' --Fs '{{P}}/5_evtVars_v4' ".format(ORIGIN=ORIGIN, YEAR=YEAR)
+T2L="-P {ORIGIN}/NanoTrees_HWH_2lskim_170920/{YEAR} --Fs '{{P}}/3_recleaner_vMarcAllVars' --Fs '{{P}}/5_evtVars_v5' ".format(ORIGIN=ORIGIN, YEAR=YEAR)
 T3L=T2L
 T4L=T2L
 
