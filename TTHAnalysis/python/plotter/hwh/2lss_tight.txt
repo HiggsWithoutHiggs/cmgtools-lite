@@ -1,12 +1,12 @@
 alwaystrue: 1
-#trigger: Trigger_2lss
+trigger: Trigger_2lss
 filters: Flag_goodVertices && Flag_globalSuperTightHalo2016Filter && Flag_HBHENoiseFilter && Flag_HBHENoiseIsoFilter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_BadPFMuonFilter && (Flag_ecalBadCalibFilter || (year == 2016))  $DATA{&& Flag_eeBadScFilter}
 cleanup: minMllAFAS > 12
 dilep: nLepClean_Recl>=2
 pt5030: LepClean_Recl_pt[0]>50 && LepClean_Recl_pt[1]>30
-#htllv100 : LepClean_Recl_pt[0]+LepClean_Recl_pt[1]+MET_pt > 100
-##TT: LepClean_Recl_isLepTight[0] && LepClean_Recl_isLepTight[1]
-##exclusive: nLepTight_Recl<=2
+htllv250 : LepClean_Recl_pt[0]+LepClean_Recl_pt[1]+MET_pt > 250
+#TT: LepClean_Recl_isLepTight[0] && LepClean_Recl_isLepTight[1]
+exclusive: nLepTight_Recl<=2
 same-sign: LepClean_Recl_charge[0]*LepClean_Recl_charge[1] > 0
 Zee_veto: abs(LepClean_Recl_pdgId[0])!=11 || abs(LepClean_Recl_pdgId[1]) != 11 || abs(mass_2(LepClean_Recl_pt[0],LepClean_Recl_eta[0],LepClean_Recl_phi[0],LepClean_Recl_mass[0],LepClean_Recl_pt[1],LepClean_Recl_eta[1],LepClean_Recl_phi[1],LepClean_Recl_mass[1])-91.2) > 10
 #metLDee: abs(LepClean_Recl1_pdgId)!=11 || abs(LepClean_Recl2_pdgId) != 11 || MET_pt*0.6 + mhtJet25*0.4 > 30

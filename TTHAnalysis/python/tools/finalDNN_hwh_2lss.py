@@ -32,7 +32,7 @@ class finalDNN_2lss(Module):
                 self.systsJEC[-(i+1)]="_%sDown"%var
 
         for var in self.systsJEC: 
-            self._MVAs.append( TFTool('DNN_2lss%s'%self.systsJEC[var], os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/model_2lss_tightpresel_100k.pb',
+            self._MVAs.append( TFTool('DNN_2lss%s'%self.systsJEC[var], os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/trained_model_2lss_tightpresel_1M.pb',
                                self.getVarsForVariation(self.systsJEC[var]), cats_2lss, varorder))
 
             self.outVars.extend( ['DNN_2lss%s_'%self.systsJEC[var] + x for x in cats_2lss])
@@ -50,9 +50,9 @@ class finalDNN_2lss(Module):
         vars_2lss_unclDown["mT_lep2"          ] =  lambda ev : ev.MT_met_lep2_unclustEnDown
         self.outVars.extend( ['DNN_2lss_unclDown_' + x for x in cats_2lss])
 
-        worker_2lss_unclUp        = TFTool('DNN_2lss_unclUp', os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/model_2lss_tightpresel_100k.pb',
+        worker_2lss_unclUp        = TFTool('DNN_2lss_unclUp', os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/trained_model_2lss_tightpresel_1M.pb',
                                            vars_2lss_unclUp, cats_2lss, varorder)
-        worker_2lss_unclDown      = TFTool('DNN_2lss_unclDown', os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/model_2lss_tightpresel_100k.pb',
+        worker_2lss_unclDown      = TFTool('DNN_2lss_unclDown', os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/trained_model_2lss_tightpresel_1M.pb',
                                            vars_2lss_unclDown, cats_2lss, varorder)
         
         self._MVAs.extend( [worker_2lss_unclUp, worker_2lss_unclDown])
@@ -60,17 +60,17 @@ class finalDNN_2lss(Module):
         
 
     def getVarsForVariation(self, var ): 
-        return {     "lep1_pt"          : lambda ev : ev.LepGood_pt[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
-                     "lep1_eta"         : lambda ev : ev.LepGood_eta[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else 0,
-                     "lep1_phi"         : lambda ev : ev.LepGood_phi[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
-                     "lep1_charge"      : lambda ev : ev.LepGood_charge[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
+        return {     "lep1_pt"          : lambda ev : ev.LepClean_Recl_pt[0] if ev.nLepClean_Recl >= 1 else -9,
+                     "lep1_eta"         : lambda ev : ev.LepClean_Recl_eta[0] if ev.nLepClean_Recl >= 1 else 0,
+                     "lep1_phi"         : lambda ev : ev.LepClean_Recl_phi[0] if ev.nLepClean_Recl >= 1 else -9,
+                     "lep1_charge"      : lambda ev : ev.LepClean_Recl_charge[0] if ev.nLepClean_Recl >= 1 else -9,
                      
-                     "lep2_pt"          : lambda ev : ev.LepGood_pt[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
-                     "lep2_eta"         : lambda ev : ev.LepGood_eta[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
-                     "lep2_phi"         : lambda ev : ev.LepGood_phi[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
+                     "lep2_pt"          : lambda ev : ev.LepClean_Recl_pt[1] if ev.nLepClean_Recl >= 2 else -9,
+                     "lep2_eta"         : lambda ev : ev.LepClean_Recl_eta[1] if ev.nLepClean_Recl >= 2 else -9,
+                     "lep2_phi"         : lambda ev : ev.LepClean_Recl_phi[1] if ev.nLepClean_Recl >= 2 else -9,
                      
-                     "maxeta"           : lambda ev : max( [abs(ev.LepGood_eta[int(ev.iLepFO_Recl[0])]), abs(ev.LepGood_eta[int(ev.iLepFO_Recl[1])])]),
-                     "Dilep_pdgId"      : lambda ev : (28 - abs(ev.LepGood_pdgId[int(ev.iLepFO_Recl[0])]) - abs(ev.LepGood_pdgId[int(ev.iLepFO_Recl[1])]))/2,
+                     "maxeta"           : lambda ev : max( [abs(ev.LepClean_Recl_eta[0]), abs(ev.LepClean_Recl_eta[1])]),
+                     "Dilep_pdgId"      : lambda ev : (28 - abs(ev.LepClean_Recl_pdgId[0]) - abs(ev.LepClean_Recl_pdgId[1]))/2,
                      
                      "jet1_pt"          : lambda ev : getattr(ev,'JetSel_Recl_pt')[0] if getattr(ev,'nJet25_Recl') > 0 else -9,
                      "jet1_eta"         : lambda ev : abs(ev.JetSel_Recl_eta[0]) if getattr(ev,'nJet25_Recl') > 0 else 9,

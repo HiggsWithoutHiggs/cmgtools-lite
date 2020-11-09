@@ -13,7 +13,7 @@ class finalDNN_3l(Module):
         self._MVAs   = [] 
         self.fillInputs = fillInputs
         varorder = ["lep1_pt","lep1_eta","lep1_phi","lep1_charge","lep2_pt","lep2_eta","lep2_phi","maxeta","Dilep_pdgId","jet1_pt","jet1_eta","jet1_phi","jet2_pt","jet2_eta","jet2_phi","jet3_pt","jet3_eta","jet3_phi","jetFwd1_pt","jetFwd1_eta","n_presel_jetFwd","n_presel_jet","nTopjet","topjet1_pt","topjet1_eta","topjet1_phi","topjet1_Ttag","nBJetLoose","nBJetMedium","lep3_pt","lep3_eta","lep3_phi"]
-        cats_3l = ['predictions_tjvv','predictions_ttV','predictions_tt','predictions_other']
+        cats_3l = ['predictions_tjvv','predictions_tt','predictions_other']
 
         if fillInputs:
             self.outVars.extend(varorder+['nEvent'])
@@ -32,7 +32,7 @@ class finalDNN_3l(Module):
                 self.systsJEC[-(i+1)]="_%sDown"%var
 
         for var in self.systsJEC: 
-            self._MVAs.append( TFTool('DNN_3l%s'%self.systsJEC[var], os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/model_wz_4classes.pb',
+            self._MVAs.append( TFTool('DNN_3l%s'%self.systsJEC[var], os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/model_3l_3classes_tightpresel.pb',
                                self.getVarsForVariation(self.systsJEC[var]), cats_3l, varorder))
 
             self.outVars.extend( ['DNN_3l%s_'%self.systsJEC[var] + x for x in cats_3l])
@@ -50,9 +50,9 @@ class finalDNN_3l(Module):
         vars_3l_unclDown["mT_lep2"          ] =  lambda ev : ev.MT_met_lep2_unclustEnDown
         self.outVars.extend( ['DNN_3l_unclDown_' + x for x in cats_3l])
 
-        worker_3l_unclUp        = TFTool('DNN_3l_unclUp', os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/model_wz_4classes.pb',
+        worker_3l_unclUp        = TFTool('DNN_3l_unclUp', os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/model_3l_3classes_tightpresel.pb',
                                            vars_3l_unclUp, cats_3l, varorder)
-        worker_3l_unclDown      = TFTool('DNN_3l_unclDown', os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/model_wz_4classes.pb',
+        worker_3l_unclDown      = TFTool('DNN_3l_unclDown', os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/model_3l_3classes_tightpresel.pb',
                                            vars_3l_unclDown, cats_3l, varorder)
         
         self._MVAs.extend( [worker_3l_unclUp, worker_3l_unclDown])
@@ -60,21 +60,21 @@ class finalDNN_3l(Module):
 
 
     def getVarsForVariation(self, var ): 
-        return {     "lep1_pt"          : lambda ev : ev.LepClean_Recl_pt[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
-                     "lep1_eta"         : lambda ev : ev.LepClean_Recl_eta[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else 0,
-                     "lep1_phi"         : lambda ev : ev.LepClean_Recl_phi[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
-                     "lep1_charge"      : lambda ev : ev.LepClean_Recl_charge[int(ev.iLepFO_Recl[0])] if ev.nLepFO_Recl >= 1 else -9,
+        return {     "lep1_pt"          : lambda ev : ev.LepClean_Recl_pt[0] if ev.nLepClean_Recl >= 1 else -9,
+                     "lep1_eta"         : lambda ev : ev.LepClean_Recl_eta[0] if ev.nLepClean_Recl >= 1 else 0,
+                     "lep1_phi"         : lambda ev : ev.LepClean_Recl_phi[0] if ev.nLepClean_Recl >= 1 else -9,
+                     "lep1_charge"      : lambda ev : ev.LepClean_Recl_charge[0] if ev.nLepClean_Recl >= 1 else -9,
                      
-                     "lep2_pt"          : lambda ev : ev.LepClean_Recl_pt[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
-                     "lep2_eta"         : lambda ev : ev.LepClean_Recl_eta[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
-                     "lep2_phi"         : lambda ev : ev.LepClean_Recl_phi[int(ev.iLepFO_Recl[1])] if ev.nLepFO_Recl >= 2 else -9,
+                     "lep2_pt"          : lambda ev : ev.LepClean_Recl_pt[1] if ev.nLepClean_Recl >= 2 else -9,
+                     "lep2_eta"         : lambda ev : ev.LepClean_Recl_eta[1] if ev.nLepClean_Recl >= 2 else -9,
+                     "lep2_phi"         : lambda ev : ev.LepClean_Recl_phi[1] if ev.nLepClean_Recl >= 2 else -9,
 
-                     "lep3_pt"          : lambda ev : ev.LepClean_Recl_pt[int(ev.iLepFO_Recl[2])] if ev.nLepFO_Recl >= 3 else -9,
-                     "lep3_eta"         : lambda ev : ev.LepClean_Recl_eta[int(ev.iLepFO_Recl[2])] if ev.nLepFO_Recl >= 3 else -9,
-                     "lep3_phi"         : lambda ev : ev.LepClean_Recl_phi[int(ev.iLepFO_Recl[2])] if ev.nLepFO_Recl >= 3 else -9,
+                     "lep3_pt"          : lambda ev : ev.LepClean_Recl_pt[2] if ev.nLepClean_Recl >= 3 else -9,
+                     "lep3_eta"         : lambda ev : ev.LepClean_Recl_eta[2] if ev.nLepClean_Recl >= 3 else -9,
+                     "lep3_phi"         : lambda ev : ev.LepClean_Recl_phi[2] if ev.nLepClean_Recl >= 3 else -9,
                      
-                     "maxeta"           : lambda ev : max( [abs(ev.LepClean_Recl_eta[int(ev.iLepFO_Recl[0])]), abs(ev.LepClean_Recl_eta[int(ev.iLepFO_Recl[1])])]),
-                     "Dilep_pdgId"      : lambda ev : (28 - abs(ev.LepClean_Recl_pdgId[int(ev.iLepFO_Recl[0])]) - abs(ev.LepClean_Recl_pdgId[int(ev.iLepFO_Recl[1])]))/2,
+                     "maxeta"           : lambda ev : max( [abs(ev.LepClean_Recl_eta[0]), abs(ev.LepClean_Recl_eta[1])]),
+                     "Dilep_pdgId"      : lambda ev : (28 - abs(ev.LepClean_Recl_pdgId[0]) - abs(ev.LepClean_Recl_pdgId[1]))/2,
                      
                      "jet1_pt"          : lambda ev : getattr(ev,'JetSel_Recl_pt')[0] if getattr(ev,'nJet25_Recl') > 0 else -9,
                      "jet1_eta"         : lambda ev : abs(ev.JetSel_Recl_eta[0]) if getattr(ev,'nJet25_Recl') > 0 else 9,
