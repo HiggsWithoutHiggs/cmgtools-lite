@@ -105,7 +105,7 @@ if __name__ == "__main__":
         model = getCompiledModelA(nvars,nnodes)
         #model = getCompiledModelB(nvars,nnodes)
 
-        history = model.fit( data['train_x'], data['train_y'], epochs=100, batch_size=90, validation_data=(data['test_x'], data['test_y']), class_weight=class_weight)
+        history = model.fit( data['train_x'], data['train_y'], epochs=20, batch_size=100, validation_data=(data['test_x'], data['test_y']), class_weight=class_weight)
 
         modelname = os.getcwd()+'/'+os.path.basename(options.outfile).split('.')[0]
         # keras model (H5)

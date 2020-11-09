@@ -60,3 +60,5 @@ kinMVA_3l_catIndex_3l_MVA : hwh_catIndex_3l_MVA(DNN_3l_predictions_tjvv, DNN_3l_
 4lep_ptl4               : LepClean_Recl_pt[3]                                                        : 28,20.,300.; XTitle="muon p_{T} 4"
 4lep_etal4              : TMath::Abs(LepClean_Recl_eta[3])                                           : 10,0.,2.4; XTitle="muon #eta 4"
 4lep_ptT                : TJetSel_Recl_pt[0]                                                         : 15,0.,750.  ; XTitle="top jet p_{T}"
+
+kinMVA_4l_catIndex_4l_MVA : hwh_catIndex_4l_MVA(DNN_4l_predictions_tjvv, DNN_4l_predictions_tt, DNN_4l_predictions_other) : 2,0.5,2.5 ; XTitle="4l category" 

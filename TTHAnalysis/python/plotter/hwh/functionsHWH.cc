@@ -257,7 +257,7 @@ float hwh_mva_4l(float tjvv, float tt, float other ){
   return tjvv / (tjvv+tt+other);
 }
 
-int ttH_catIndex_4l(float mva, float cut=0.85){
-  if (hwh_mva_4l(mva) < cut) return 1;
+int hwh_catIndex_4l_MVA(float tjvv, float tt, float other, float cut=0.85){
+  if (hwh_mva_4l(tjvv,tt,other) < cut) return 1;
   else return 2;
 }

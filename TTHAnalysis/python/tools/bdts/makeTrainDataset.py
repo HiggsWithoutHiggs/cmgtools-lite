@@ -231,7 +231,7 @@ if __name__ == "__main__":
             vals['cut'] = cuts[options.channel][cl]
 
     ## lxplus seems to have 10 cores/each
-    p =  Pool(min(10,len(sigSamples+ttvSamples+ttSamples+othSamples)))
+    p =  Pool(min(30,len(sigSamples+ttvSamples+ttSamples+othSamples)))
     func = partial(toNumpy,featureList,options.maxEntries)
     results = list(tqdm.tqdm(p.imap(func, tasks), total=len(tasks)))
 
