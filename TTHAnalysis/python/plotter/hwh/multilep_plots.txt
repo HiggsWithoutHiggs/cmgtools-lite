@@ -1,0 +1,56 @@
+nT                 : nTJetSel_Recl                                                         : 3,-0.5,2.5  ; XTitle="nTopJets"
+nV                 : nVJetSel_Recl                                                         : 3,-0.5,2.5  ; XTitle="nVJets"
+topmass            : TJetSel_Recl_mass                                                     : 25,0.,250. ; XTitle="top jet mass"
+ptT                : TJetSel_Recl_pt[0]                                                    : 15,0.,750.  ; XTitle="top jet p_{T}"
+ptV                : VJetSel_Recl_pt[0]                                                    : 15,0.,750.  ; XTitle="V jet p_{T}"
+1fwdj              : nLJetSel_Recl                                                         : 20,-0.5,19.5 ; XTitle="nLJetSel_Recl"
+ptl1               : LepClean_Recl_pt[0]                                                        : 28,20.,300.; XTitle="muon p_{T} 1"
+ptl2               : LepClean_Recl_pt[1]                                                        : 18,20.,200.; XTitle="muon p_{T} 2"
+etal1              : TMath::Abs(LepClean_Recl_eta[0])                                           : 10,0.,2.4; XTitle="muon #eta 1"
+etal2              : TMath::Abs(LepClean_Recl_eta[1])                                           : 10,0.,2.4; XTitle="muon #eta 2"
+
+nJet25:	    	nJet25_Recl				     : [-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5] ; XTitle='N(jet\, p_{T} > 25 GeV)', XNDiv=5, xBinLabels="2\,3\,4\,5\,6\,7\,8\,#geq 9"
+nBJetLoose25:   nBJetLoose25_Recl                            : [-0.5,0.5,1.5,2.5,3.5,4.5] ; XTitle='N(jet\, p_{T} > 25 GeV\, CSVL)', XNDiv=5, xBinLabels="0\,1\,2\,3\,#geq 4", MoreY=1.7
+nBJetMedium25:  nBJetMedium25_Recl                           : [-0.5,0.5,1.5,2.5,3.5,4.5] ; XTitle='N(jet\, p_{T} > 25 GeV\, CSVM)', XNDiv=5, xBinLabels="0\,1\,2\,3\,#geq 4", MoreY=1.7
+topTag:         TJetSel_Recl_deepTag_TvsQCD[0]               : 20,0,1; XTitle='top deep tag'
+
+####### 2 LEPTONS SPECIFIC ##########
+#2lep_nTight: 	if3(nLepGood>1,LepGood_isLepTight[0]+LepGood_isLepTight[1],-99)                                          : [-0.5,0.5,1.5,2.5]; XTitle="Tight leptons among the first two", XNDdiv=505, Legend='TL', IncludeOverflows=False
+2lep_charge:  	if3(nLepClean_Recl>1,LepClean_Recl_charge[0],-99) 	     	     	      		     : [-2,0,2]; XTitle='lepton charge', XNDiv=205, Legend='TR', IncludeOverflows=False, MoreY=2.0, xBinLabels="#minus #minus\,+ +"
+2lep_flav:    	if3(nLepClean_Recl>1,if3(abs(LepClean_Recl_pdgId[0])!=abs(LepClean_Recl_pdgId[1]),1,abs(LepClean_Recl_pdgId[0])-11),-99)     : [-0.5,0.5,1.5,2.5]; XTitle="lepton flavour", XNDiv=505, MoreY=2.0, xBinLabels="ee\,e#mu\,#mu#mu"
+2lep_bestMVA:	max(LepClean_Recl_mvaTTH[0],LepClean_Recl_mvaTTH[1])		: 16,0.6,1; XTitle="Best lepMVA in 2l", Legend='TL'
+2lep_worseMVA:	min(LepClean_Recl_mvaTTH[0],LepClean_Recl_mvaTTH[1])	        : 16,0.6,1; XTitle="Worse lepMVA in 2l", Legend='TL'
+#2lep_worsedz:   max(abs(LepGood_dz[0]),abs(LepGood_dz[1]))*10000	 : 20,0.0,200.; XTitle="Max lepton dz [#mum]"
+2lep_mll:	if3(nLepClean_Recl>1,mass_2(LepClean_Recl_pt[0],LepClean_Recl_eta[0],LepClean_Recl_phi[0],LepClean_Recl_mass[0],LepClean_Recl_pt[1],LepClean_Recl_eta[1],LepClean_Recl_phi[1],LepClean_Recl_mass[1]),-99)    :  20,0,1000; XTitle="m(ll) (GeV)"
+2lep_mll_onZ:	if3(nLepClean_Recl>1,mass_2(LepClean_Recl_pt[0],LepClean_Recl_eta[0],LepClean_Recl_phi[0],LepClean_Recl_mass[0],LepClean_Recl_pt[1],LepClean_Recl_eta[1],LepClean_Recl_phi[1],LepClean_Recl_mass[1]),-99)    :  20,80,120; XTitle="m(ll) (GeV)"
+2lep_mtWmin: 	if3(nLepClean_Recl>1,min(mt_2(LepClean_Recl_pt[0],LepClean_Recl_phi[0],MET_pt,MET_phi),mt_2(LepClean_Recl_pt[1],LepClean_Recl_phi[1],MET_pt,MET_phi)),-99) 		  :   20,0,200; XTitle="min M_{T}(l_{i}\,E_{T}^{miss}) (GeV)"
+2lep_htllv:	if3(nLepClean_Recl>1,LepClean_Recl_pt[0]+LepClean_Recl_pt[1]+MET_pt,-99)	  : 20,0,600; XTitle="l_{1} p_{T} + l_{2} p_{T} + E_{T}^{miss} (GeV)"
+
+kinMVA_2lss_score_tjvv  : DNN_2lss_predictions_tjvv : 40,0,1; XTitle="2lss DNN score (signal node)"
+kinMVA_2lss_score_other : DNN_2lss_predictions_other : 40,0,1; XTitle="2lss DNN score (other node)"
+kinMVA_2lss_score_ttV   : DNN_2lss_predictions_ttV : 40,0,1; XTitle="2lss DNN score (ttV node)"
+kinMVA_2lss_score_tt    : DNN_2lss_predictions_tt : 40,0,1; XTitle="2lss DNN score (tt node)"
+kinMVA_2lss_score_max : max(max(DNN_2lss_predictions_tjvv,DNN_2lss_predictions_other),max(DNN_2lss_predictions_ttV,DNN_2lss_predictions_tt)) : 10,0.25,1; XTitle="2lss maximum DNN score"
+kinMVA_2lss_discCats : hwh_catIndex_2lss(LepClean_Recl_pdgId[0], LepClean_Recl_pdgId[1], DNN_2lss_predictions_tjvv , DNN_2lss_predictions_ttV , DNN_2lss_predictions_tt , DNN_2lss_predictions_other) : 12,0.5,12.5; XTitle="2lss DNN classes"
+kinMVA_2lss_MVA : hwh_catIndex_2lss_MVA( LepClean_Recl_pdgId[0], LepClean_Recl_pdgId[1], DNN_2lss_predictions_tjvv , DNN_2lss_predictions_ttV , DNN_2lss_predictions_tt , DNN_2lss_predictions_other) : 120,0.5,120.5; XTitle="2lss DNN mva"
+
+
+####### 3 LEPTONS SPECIFIC ##########
+#3lep_nTight: 	if3(nLepGood>2,LepGood_isLepTight[0]+LepGood[1]_isLepTight+LepGood[2]_isLepTight,-99)                            : [-0.5,0.5,1.5,2.5,3.5]; XTitle="Tight leptons among the first three", XNDiv=4, Legend='TL', IncludeOverflows=False
+3lep_charge:  	if3(nLepClean_Recl>2,LepClean_Recl_charge[0]+LepClean_Recl_charge[1]+LepClean_Recl_charge[2],-99) 	     	      	        : [-1.5,-0.5,0.5,1.5]; XTitle='q(l_{1}\,l_{2}\,l_{3})', XNDiv=3, Legend='TR', IncludeOverflows=False, MoreY=2.0
+3lep_n_ele:   	if3(nLepClean_Recl>2,(abs(LepClean_Recl_pdgId[0])==11)+(abs(LepClean_Recl_pdgId[1])==11)+(abs(LepClean_Recl_pdgId[2])==11),-99)	: [-0.5,0.5,1.5,2.5,3.5]; XTitle='Number of electrons', XNDiv=5, IncludeOverflows=False
+3lep_n_mu:    	if3(nLepClean_Recl>2,(abs(LepClean_Recl_pdgId[0])==13)+(abs(LepClean_Recl_pdgId[1])==13)+(abs(LepClean_Recl_pdgId[2])==13),-99)	: [-0.5,0.5,1.5,2.5,3.5]; XTitle='Number of muons', XNDiv=5, IncludeOverflows=False
+3lep_worseMVA:	min(LepClean_Recl_mvaTTH[0],min(LepClean_Recl_mvaTTH[1],LepClean_Recl_mvaTTH[2]))					: 32,0.6,1; XTitle="Worse lepMVA in 3l", Legend='TL'
+3lep_m3l: mass_3_cheap(LepClean_Recl_pt[0],LepClean_Recl_eta[0],LepClean_Recl_pt[1],LepClean_Recl_eta[1],LepClean_Recl_phi[1]-LepClean_Recl_phi[0],LepClean_Recl_pt[2],LepClean_Recl_eta[2],LepClean_Recl_phi[2]-LepClean_Recl_phi[0]): 40,0,400; XTitle="M_{3l} (GeV)"
+3lep_ptl3               : LepClean_Recl_pt[2]                                                        : 28,20.,300.; XTitle="muon p_{T} 3"
+3lep_etal3              : TMath::Abs(LepClean_Recl_eta[2])                                           : 10,0.,2.4; XTitle="muon #eta 3"
+
+kinMVA_3l_score_tjvv  : DNN_3l_predictions_tjvv : 40,0,1; XTitle="3l DNN score (signal node)"
+kinMVA_3l_score_other : DNN_3l_predictions_other : 40,0,1; XTitle="3l DNN score (other node)"
+kinMVA_3l_score_tt    : DNN_3l_predictions_tt : 40,0,1; XTitle="3l DNN score (tt(V) node)"
+kinMVA_3l_score_bkg   : max(DNN_3l_predictions_tt,DNN_3l_predictions_other) : 40,0,1; XTitle="3l DNN score (bkg node)"
+kinMVA_3l_score_max : max(max(DNN_3l_predictions_tjvv,DNN_3l_predictions_other),DNN_3l_predictions_tt) : 10,0.25,1; XTitle="3l maximum DNN score"
+
+kinMVA_3l_discCats : hwh_catIndex_3l(DNN_3l_predictions_tjvv, DNN_3l_predictions_tt, DNN_3l_predictions_other, LepClean_Recl_pdgId[0], LepClean_Recl_pdgId[1], LepClean_Recl_pdgId[2], mZ1 ) : 6,0.5,6.5 ; XTitle="3l DNN classes"
+kinMVA_3l_catIndex_3l_MVA : hwh_catIndex_3l_MVA(DNN_3l_predictions_tjvv, DNN_3l_predictions_tt, DNN_3l_predictions_other, LepClean_Recl_pdgId[0], LepClean_Recl_pdgId[1], LepClean_Recl_pdgId[2], mZ1 ) : 42,0.5,42.5 ; XTitle="3l DNN mva"
+

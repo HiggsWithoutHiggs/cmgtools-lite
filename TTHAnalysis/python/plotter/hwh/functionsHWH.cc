@@ -203,14 +203,7 @@ int hwh_catIndex_3l(float tjvv, float tt, float other, int lep1_pdgId, int lep2_
     }
     else
       cout << "[3l]: It shouldnt be here. pdgids are " << abs(lep1_pdgId) << " " <<  abs(lep2_pdgId) << " " << abs(lep3_pdgId)  << endl;
-    if (other >= tjvv && other >= tt)
-      procch = 0;
-    else if (tt >= tjvv && tt >= other)
-      procch = 1;
-    else 
-      cout << "[3l]: It shouldnt be here. DNN scores are " << tjvv << " " << other << " " << tt << endl;
-      
-    return flch*2+procch+3;
+    return flch+3;
   }
 
   cout << "[hwh_catIndex_3l]: It should not be here" << endl;
@@ -219,11 +212,7 @@ int hwh_catIndex_3l(float tjvv, float tt, float other, int lep1_pdgId, int lep2_
 }
 
 std::vector<TString> hwhbin3llabels = {
-  "tjVV_nr","tjVV_r",
-  "eee_Othernode","eee_ttnode",
-  "eem_Othernode","eem_ttnode",
-  "emm_Othernode","emm_ttnode",
-  "mmm_Othernode","mmm_ttnode"
+  "tjVV_nr","tjVV_r","eee_Bkgnode","eem_Bkgnode","emm_Bkgnode","mmm_Bkgnode" 
 };
 
 std::map<TString, TH1F*> hwhbinHistos3l;
@@ -255,7 +244,12 @@ int hwh_catIndex_3l_MVA(float tjvv, float tt, float other, int lep1_pdgId, int l
 
 
 int hwh_catIndex_3l_node(float tjvv, float tt, float other ){
-  // for the moment, the same of the 2lss nodes
-  return hwh_2lss_node(tjvv,-1,tt,other);
+  int procch = 0;
+  // for the time being, dnn confuses other and tt. So merge these two cats
+  if (tjvv >= tt && tjvv >= other)
+    procch = 0;
+  else
+    procch = 1;
+  return procch;
 }
 
