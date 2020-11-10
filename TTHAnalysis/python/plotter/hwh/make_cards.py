@@ -48,7 +48,7 @@ CATPOSTFIX=""
 
 FUNCTION_2L="hwh_catIndex_2lss_MVA(LepClean_Recl1_pdgId,LepClean_Recl2_pdgId,DNN_2lss_predictions_tjvv,DNN_2lss_predictions_ttV,DNN_2lss_predictions_tt,DNN_2lss_predictions_other)"
 FUNCTION_3L="hwh_catIndex_3l_MVA(DNN_3l_predictions_tjvv,DNN_3l_predictions_tt,DNN_3l_predictions_other,LepClean_Recl1_pdgId,LepClean_Recl2_pdgId,LepClean_Recl3_pdgId,mZ1)"
-FUNCTION_4L=''' "hwh_catIndex_4l(DNN_4l_predictions_tjvv,DNN_4l_predictions_tt,DNN_4l_predictions_other)" [0.5,1.5,2.5] '''
+FUNCTION_4L=''' "hwh_catIndex_4l_MVA(DNN_4l_predictions_tjvv,DNN_4l_predictions_tt,DNN_4l_predictions_other)" "[0.5,1.5,2.5]" '''
 ONEBIN="1 1,0.5,1.5"
 MCASUFFIX="mc"
 
@@ -80,3 +80,4 @@ if REGION=="4l":
     OPT_4L='{T4L} {OPTIONS} -W "puWeight"'.format(T4L=T4L,OPTIONS=OPTIONS)
     CATPOSTFIX=""
     TORUN="python {SCRIPT} {DOFILE} hwh/mca-4l-{MCASUFFIX}{MCAOPTION}.txt hwh/4l_tight.txt {FUNCTION_4L} {SYSTS} {OPT_4L} --binname hwh_4l --year {YEAR} ".format(SCRIPT=SCRIPT, DOFILE=DOFILE,MCASUFFIX=MCASUFFIX,MCAOPTION=MCAOPTION,FUNCTION_4L=FUNCTION_4L,SYSTS=SYSTS,OPT_4L=OPT_4L,YEAR=YEAR)
+    print submit.format(command=TORUN)
