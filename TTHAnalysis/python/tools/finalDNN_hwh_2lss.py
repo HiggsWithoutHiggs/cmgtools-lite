@@ -13,7 +13,7 @@ class finalDNN_2lss(Module):
         self._MVAs   = [] 
         self.fillInputs = fillInputs
         varorder = ["lep1_pt","lep1_eta","lep1_phi","lep1_charge","lep2_pt","lep2_eta","lep2_phi","maxeta","Dilep_pdgId","jet1_pt","jet1_eta","jet1_phi","jet2_pt","jet2_eta","jet2_phi","jet3_pt","jet3_eta","jet3_phi","jetFwd1_pt","jetFwd1_eta","n_presel_jetFwd","n_presel_jet","nTopjet","topjet1_pt","topjet1_eta","topjet1_phi","topjet1_Ttag","nBJetLoose","nBJetMedium"]
-        cats_2lss = ['predictions_tjvv','predictions_ttV','predictions_tt','predictions_other']
+        cats_2lss = ['predictions_tjvv','predictions_tt','predictions_other']
 
         if fillInputs:
             self.outVars.extend(varorder+['nEvent'])
@@ -32,7 +32,7 @@ class finalDNN_2lss(Module):
                 self.systsJEC[-(i+1)]="_%sDown"%var
 
         for var in self.systsJEC: 
-            self._MVAs.append( TFTool('DNN_2lss%s'%self.systsJEC[var], os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/trained_model_2lss_tightpresel_1M.pb',
+            self._MVAs.append( TFTool('DNN_2lss%s'%self.systsJEC[var], os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/trained_model_2lss_3classes_tightpresel_1M.pb',
                                self.getVarsForVariation(self.systsJEC[var]), cats_2lss, varorder))
 
             self.outVars.extend( ['DNN_2lss%s_'%self.systsJEC[var] + x for x in cats_2lss])
@@ -50,9 +50,9 @@ class finalDNN_2lss(Module):
         vars_2lss_unclDown["mT_lep2"          ] =  lambda ev : ev.MT_met_lep2_unclustEnDown
         self.outVars.extend( ['DNN_2lss_unclDown_' + x for x in cats_2lss])
 
-        worker_2lss_unclUp        = TFTool('DNN_2lss_unclUp', os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/trained_model_2lss_tightpresel_1M.pb',
+        worker_2lss_unclUp        = TFTool('DNN_2lss_unclUp', os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/trained_model_2lss_3classes_tightpresel_1M.pb',
                                            vars_2lss_unclUp, cats_2lss, varorder)
-        worker_2lss_unclDown      = TFTool('DNN_2lss_unclDown', os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/trained_model_2lss_tightpresel_1M.pb',
+        worker_2lss_unclDown      = TFTool('DNN_2lss_unclDown', os.environ['CMSSW_BASE'] + '/src/CMGTools/TTHAnalysis/data/kinMVA/hwh/trained_model_2lss_3classes_tightpresel_1M.pb',
                                            vars_2lss_unclDown, cats_2lss, varorder)
         
         self._MVAs.extend( [worker_2lss_unclUp, worker_2lss_unclDown])

@@ -86,13 +86,13 @@ if __name__ == "__main__":
 
     sig = sums[0]
     bkg = sums[1] + sums[2]
-    if options.channel=='2lss': bkg += sums[3]
+    #if options.channel=='2lss': bkg += sums[3]
 
     class_weight = { 0 : float((sig+bkg)/sig),
                      1 : float((sig+bkg)/bkg),
                      2 : float((sig+bkg)/bkg)}
-    if  options.channel=='2lss':
-        class_weight.update( {3 : float((sig+bkg)/bkg)} )
+    # if  options.channel=='2lss':
+    #     class_weight.update( {3 : float((sig+bkg)/bkg)} )
 
     print ('weights will be', class_weight)
 
@@ -101,11 +101,12 @@ if __name__ == "__main__":
             inter_op_parallelism_threads=50)) as sess:
         K.set_session(sess)
         
-        nnodes = 4 if options.channel=='2lss' else 3
+        #nnodes = 4 if options.channel=='2lss' else 3
+        nnodes = 3
         model = getCompiledModelA(nvars,nnodes)
         #model = getCompiledModelB(nvars,nnodes)
 
-        history = model.fit( data['train_x'], data['train_y'], epochs=20, batch_size=100, validation_data=(data['test_x'], data['test_y']), class_weight=class_weight)
+        history = model.fit( data['train_x'], data['train_y'], epochs=20, batch_size=80, validation_data=(data['test_x'], data['test_y']), class_weight=class_weight)
 
         modelname = os.getcwd()+'/'+os.path.basename(options.outfile).split('.')[0]
         # keras model (H5)

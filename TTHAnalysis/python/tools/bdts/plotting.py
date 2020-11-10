@@ -56,43 +56,31 @@ if __name__ == "__main__":
         class1 =  (together[together[:,1] == 0]) [:,0]
         class2 =  (together[together[:,1] == 1]) [:,0]
         class3 =  (together[together[:,1] == 2]) [:,0]
-        if options.channel=='2lss': class4 =  (together[together[:,1] == 2]) [:,0]
 
         bins = 20
         plt.clf()
         plt.hist(class1, bins, alpha=0.5,density=True, label='Sig ll')
-        if options.channel=='2lss':
-            plt.hist(class2, bins, alpha=0.5,density=True, label='ttW,ttZ')
-            plt.hist(class3, bins, alpha=0.5,density=True, label='tt')
-            plt.hist(class4, bins, alpha=0.5,density=True, label='other')
-        else:
-            plt.hist(class2, bins, alpha=0.5,density=True, label='tt,ttW,ttZ')
-            plt.hist(class3, bins, alpha=0.5,density=True, label='other')
+        plt.hist(class2, bins, alpha=0.5,density=True, label='tt,ttW,ttZ')
+        plt.hist(class3, bins, alpha=0.5,density=True, label='other')
         plt.legend(loc='upper right')
         plt.show()
     
         for ext in ['png','pdf']:
             plt.savefig('{o}/input_{var}.{ext}'.format(o=outname,var=var,ext=ext))
 
-    nnodes = 4 if options.channel=='2lss' else 3
+    nnodes = 3
     for node in range(nnodes):
         together = np.dstack( (prediction[:,node], y ) )[0]
         
         class1 =  (together[together[:,1] == 0]) [:,0]
         class2 =  (together[together[:,1] == 1]) [:,0]
         class3 =  (together[together[:,1] == 2]) [:,0]
-        if options.channel=='2lss': class4 =  (together[together[:,1] == 3]) [:,0]
         
         bins = 20
         plt.clf()
         plt.hist(class1, bins, alpha=0.5,density=True, label='Sig ll')
-        if options.channel=='2lss':
-            plt.hist(class2, bins, alpha=0.5,density=True, label='ttW,ttZ')
-            plt.hist(class3, bins, alpha=0.5,density=True, label='tt')
-            plt.hist(class4, bins, alpha=0.5,density=True, label='other')
-        else:
-            plt.hist(class2, bins, alpha=0.5,density=True, label='tt,ttW,ttZ')
-            plt.hist(class3, bins, alpha=0.5,density=True, label='other')
+        plt.hist(class2, bins, alpha=0.5,density=True, label='tt,ttW,ttZ')
+        plt.hist(class3, bins, alpha=0.5,density=True, label='other')
         plt.legend(loc='upper right')
         plt.show()
 
@@ -103,17 +91,12 @@ if __name__ == "__main__":
     class1 =  (together[together[:,1] == 0]) [:,0]
     class2 =  (together[together[:,1] == 1]) [:,0]
     class3 =  (together[together[:,1] == 2]) [:,0]
-    if options.channel=='2lss': class4 =  (together[together[:,1] == 3]) [:,0]
+
     bins = 20
     plt.clf()
     plt.hist(class1, bins, alpha=0.5,density=True, label='Sig ll')
-    if options.channel=='2lss':
-        plt.hist(class2, bins, alpha=0.5,density=True, label='ttW,ttZ')
-        plt.hist(class3, bins, alpha=0.5,density=True, label='tt')
-        plt.hist(class4, bins, alpha=0.5,density=True, label='other')
-    else:
-        plt.hist(class2, bins, alpha=0.5,density=True, label='tt,ttW,ttZ')
-        plt.hist(class3, bins, alpha=0.5,density=True, label='other')
+    plt.hist(class2, bins, alpha=0.5,density=True, label='tt,ttW,ttZ')
+    plt.hist(class3, bins, alpha=0.5,density=True, label='other')
         
     plt.legend(loc='upper left')
     plt.show()
