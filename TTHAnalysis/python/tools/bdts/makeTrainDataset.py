@@ -107,8 +107,7 @@ features = {
     }
 
 cuts = {
-    '2lss'       : {'sigll' : lambda ev: ev.GenV1DecayMode>1 and ev.GenV2DecayMode>1 and ev.nLepClean_Recl>=2 and (ev.LepClean_Recl_pt[0]+ev.LepClean_Recl_pt[1]+ev.MET_pt>250) and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1, 
-                    'ttv'   : lambda ev: ev.nLepClean_Recl>=2 and (ev.LepClean_Recl_pt[0]+ev.LepClean_Recl_pt[1]+ev.MET_pt>250) and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1,
+    '2lss'       : {'sigll' : lambda ev: ev.nLepClean_Recl>=2 and (ev.LepClean_Recl_pt[0]+ev.LepClean_Recl_pt[1]+ev.MET_pt>250) and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1, 
                     'tt'    : lambda ev: ev.nLepClean_Recl>=2 and (ev.LepClean_Recl_pt[0]+ev.LepClean_Recl_pt[1]+ev.MET_pt>250) and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1,
                     'other' : lambda ev: ev.nLepClean_Recl>=2 and (ev.LepClean_Recl_pt[0]+ev.LepClean_Recl_pt[1]+ev.MET_pt>250) and ev.LepClean_Recl_pt[0]>50 and ev.LepClean_Recl_pt[1]>30 and ev.nBJetMedium25_Recl>=1},
 
@@ -126,7 +125,6 @@ classes = {}
 
 classes_2lss = {
     'sigll'      : { 'cut': cuts['2lss']['sigll'], 'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
-    'ttv'        : { 'cut': cuts['2lss']['ttv'],   'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
     'tt'         : { 'cut': cuts['2lss']['tt'],    'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
     'other'      : { 'cut': cuts['2lss']['other'], 'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
 }
@@ -200,20 +198,10 @@ if __name__ == "__main__":
     sigSamples = sigSamplesWpWp if options.channel=='2lss' else sigSamplesWpWp+sigSamplesWZ+sigSamplesZZ
     for samp in sigSamples:
         tasks.append( (sampleDir+'/'+samp, ['sigll']) )
-
-    if options.channel=='2lss':
-        for samp in ttvSamples:
-            tasks.append( (sampleDir+'/'+samp, ['ttv']) )
-        for samp in ttSamples:
-            tasks.append( (sampleDir+'/'+samp, ['tt']) )
-        for samp in othSamples:
-            tasks.append( (sampleDir+'/'+samp, ['other']) )
-    else:
-        for samp in ttvSamples+ttSamples:
-            tasks.append( (sampleDir+'/'+samp, ['tt']) )
-        for samp in othSamples:
-            tasks.append( (sampleDir+'/'+samp, ['other']) )
-    
+    for samp in ttvSamples+ttSamples:
+        tasks.append( (sampleDir+'/'+samp, ['tt']) )
+    for samp in othSamples:
+        tasks.append( (sampleDir+'/'+samp, ['other']) )
     
     print('Numpy conversion. It will take time...')
     print("max entries = ",options.maxEntries)
@@ -237,7 +225,7 @@ if __name__ == "__main__":
 
     print('Now putting everything together')
 
-    types = ['sigll', 'ttv', 'tt', 'other'] if options.channel=='2lss' else ['sigll', 'tt', 'other']
+    types = ['sigll', 'tt', 'other']
     for result in results: 
         for ty in types:
             if ty+'_train' in result:
