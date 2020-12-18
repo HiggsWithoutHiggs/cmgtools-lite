@@ -1,7 +1,7 @@
 tqWW+   : TJWpWm_SM_2018 : 0.011500 ; FillColor=ROOT.kOrange+10, genSumWeightName="genEventSumw_"
-tqWW+   : TJWpWp_SM_2018 : 0.016857 ; FillColor=ROOT.kOrange+10, genSumWeightName="genEventSumw_"
-tqWZ+   : TJWZ_SM_2018   : 0.003884 ; FillColor=ROOT.kOrange+10, genSumWeightName="genEventSumw_"
-tqZZ+   : TJZZ_SM_2018   : 0.001982 ; FillColor=ROOT.kOrange+10, genSumWeightName="genEventSumw_"
+tqWW+   : TJWpWp_SM_2018 : 0.010200 ; FillColor=ROOT.kOrange+10, genSumWeightName="genEventSumw_"
+tqWZ+   : TJWZ_SM_2018   : 0.011500 ; FillColor=ROOT.kOrange+10, genSumWeightName="genEventSumw_"
+tqZZ+   : TJZZ_SM_2018   : 0.006400 ; FillColor=ROOT.kOrange+10, genSumWeightName="genEventSumw_"
 
 TT	: TTJets_DiLepton_part1 : xsec ; FillColor=ROOT.kBlue+2, genSumWeightName="genEventSumw"
 TT   	: TTJets_SingleLeptonFromT : xsec ; FillColor=ROOT.kBlue+2, genSumWeightName="genEventSumw"

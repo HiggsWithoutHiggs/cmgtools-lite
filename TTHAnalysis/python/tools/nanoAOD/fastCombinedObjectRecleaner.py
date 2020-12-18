@@ -22,6 +22,10 @@ class fastCombinedObjectRecleaner(Module):
         self.jetPtsFwd = jetPtsFwd
         self.jetBTag = jetBTag
         self.fatjetBTag = fatjetBTag
+        self.fatjetTTag = 'deepTag_TvsQCD'
+        self.fatjetWTag = 'deepTag_WvsQCD'
+        self.fatjetZTag = 'deepTag_ZvsQCD'
+        self.topTag_thr = 0.436 ## with 2.5% mistag rate. for 1% mistag rate choose 0.802
         self.btagL_thr = btagL_thr
         self.btagM_thr = btagM_thr
         self.doVetoZ = doVetoZ
@@ -64,17 +68,19 @@ class fastCombinedObjectRecleaner(Module):
 
         self._helper_lepsF = CollectionSkimmer("LepFO"+self.label, "LepGood", floats=[], maxSize=10, saveSelectedIndices=True,padSelectedIndicesWith=0)
         self._helper_lepsT = CollectionSkimmer("LepTight"+self.label, "LepGood", floats=[], maxSize=10, saveTagForAll=True)
-        self._helper_taus = CollectionSkimmer("TauSel"+self.label, self.tauc, floats=self.vars+self.vars_taus, ints=self.vars_taus_int, uchars=self.vars_taus_uchar, maxSize=10)
-        self._helper_jets = CollectionSkimmer("%sSel"%self.jc+self.label, self.jc, floats=self.vars+self.vars_jets, ints=self.vars_jets_int, maxSize=20)
+        self._helper_lepsC = CollectionSkimmer("LepClean"+self.label, "LepGood", floats=self.vars+['pt', 'mvaTTH', 'jetBTagCSV', 'sip3d', 'ip3d'], ints=['pdgId', 'jetIdx', 'charge', 'tightCharge'], maxSize=10)
+        self._helper_taus  = CollectionSkimmer("TauSel"+self.label, self.tauc, floats=self.vars+self.vars_taus, ints=self.vars_taus_int, uchars=self.vars_taus_uchar, maxSize=10)
+        self._helper_jets  = CollectionSkimmer("%sSel"%self.jc+self.label, self.jc, floats=self.vars+self.vars_jets, ints=self.vars_jets_int, maxSize=20)
         self._helper_tjets = CollectionSkimmer("TJetSel"+self.label, self.fjc, floats=self.vars+self.vars_fjets, maxSize=20)
         self._helper_vjets = CollectionSkimmer("VJetSel"+self.label, self.fjc, floats=self.vars+self.vars_fjets, maxSize=20)
+        self._helper_fjets = CollectionSkimmer("FJetSel"+self.label, self.fjc, floats=self.vars+self.vars_fjets, maxSize=20)
         self._helper_ljets = CollectionSkimmer("LJetSel"+self.label, self.jc, floats=self.vars+self.vars_jets, ints=self.vars_jets_int, maxSize=20)
-        self._helpers = [self._helper_lepsF,self._helper_lepsT,self._helper_taus,self._helper_jets,self._helper_tjets,self._helper_vjets,self._helper_ljets]
+        self._helpers = [self._helper_lepsF,self._helper_lepsT,self._helper_lepsC,self._helper_taus,self._helper_jets,self._helper_tjets,self._helper_vjets,self._helper_fjets,self._helper_ljets]
 
         if "/fastCombinedObjectRecleanerHelper_cxx.so" not in ROOT.gSystem.GetLibraries():
             print "Load C++ recleaner worker module"
             ROOT.gROOT.ProcessLine(".L %s/src/CMGTools/TTHAnalysis/python/tools/fastCombinedObjectRecleanerHelper.cxx+O" % os.environ['CMSSW_BASE'])
-        self._worker = ROOT.fastCombinedObjectRecleanerHelper(self._helper_taus.cppImpl(),self._helper_jets.cppImpl(),self._helper_tjets.cppImpl(),self._helper_vjets.cppImpl(),self._helper_ljets.cppImpl(),self.cleanJetsWithFOTaus,self.btagL_thr,self.btagM_thr, True)
+        self._worker = ROOT.fastCombinedObjectRecleanerHelper(self._helper_lepsC.cppImpl(),self._helper_taus.cppImpl(),self._helper_jets.cppImpl(),self._helper_tjets.cppImpl(),self._helper_vjets.cppImpl(),self._helper_fjets.cppImpl(),self._helper_ljets.cppImpl(),self.cleanJetsWithFOTaus,self.btagL_thr,self.btagM_thr, True)
         for x in self.jetPts: self._worker.addJetPt(x)
         self._worker.setFwdPt(self.jetPtsFwd[0], self.jetPtsFwd[1])
 
@@ -122,7 +128,8 @@ class fastCombinedObjectRecleaner(Module):
                              jecs
                          )
         self._worker.setFatJets(getattr(self,'n%s'%self.fjc),getattr(self,'%s_pt'%self.fjc),getattr(self,'%s_eta'%self.fjc),getattr(self,'%s_phi'%self.fjc),
-                                getattr(self,'%s_%s'%(self.fjc,self.fatjetBTag)))
+                                getattr(self,'%s_%s'%(self.fjc,self.fatjetBTag)),  
+                                getattr(self,'%s_%s'%(self.fjc,self.fatjetTTag)),  getattr(self,'%s_%s'%(self.fjc,self.fatjetWTag)),  getattr(self,'%s_%s'%(self.fjc,self.fatjetZTag)))
         
         self._workerMV.setLeptons(self.nLepGood, self.LepGood_pt, self.LepGood_eta, self.LepGood_phi, self.LepGood_mass, self.LepGood_pdgId)
 

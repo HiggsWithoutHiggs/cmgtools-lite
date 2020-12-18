@@ -352,12 +352,12 @@ TTZ_LO_ext1 = kreator.makeMCComponent("TTZ_LO_ext1", "/ttZJets_TuneCP5_13TeV_mad
 TTZToLLNuNu_m1to10  = kreator.makeMCComponent("TTZToLLNuNu_m1to10","/TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17NanoAODv4-PU2017_12Apr2018_Nano14Dec2018_102X_mc2017_realistic_v6-v1/NANOAODSIM", "CMS", ".*root", 0.05324, fracNegWeights=0.236)
 
 ### ttH: YR4 values at 125.0 GeV
-TTH_pow  = kreator.makeMCComponent("TTH_pow", "/ttH_M125_TuneCP5_13TeV-powheg-pythia8/RunIIFall17NanoAODv4-PU2017_12Apr2018_Nano14Dec2018_102X_mc2017_realistic_v6-v1/NANOAODSIM", "CMS", ".*root", 0.5071)
-TTHnobb_fxfx = kreator.makeMCComponent("TTHnobb_fxfx", "/ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8/RunIIFall17NanoAODv4-PU2017_12Apr2018_Nano14Dec2018_new_pmx_102X_mc2017_realistic_v6-v1/NANOAODSIM", "CMS", ".*root", 0.5071*(1-0.582), fracNegWeights=0.344)
-TTHnobb_pow = kreator.makeMCComponent("TTHnobb_pow", "/ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8/RunIIFall17NanoAODv4-PU2017_12Apr2018_Nano14Dec2018_new_pmx_102X_mc2017_realistic_v6-v1/NANOAODSIM", "CMS", ".*root", 0.5071*(1-0.582))
-TTHtautau_pow = kreator.makeMCComponent("TTHtautau_pow", "/ttHToTauTau_M125_TuneCP5_13TeV-powheg-pythia8/RunIIFall17NanoAODv4-PU2017_12Apr2018_Nano14Dec2018_new_pmx_102X_mc2017_realistic_v6-v1/NANOAODSIM", "CMS", ".*root", 0.5071*0.06272)
+TTH_pow  = kreator.makeMCComponent("TTH_pow", "/ttH_M125_TuneCP5_13TeV-powheg-pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM", "CMS", ".*root", 0.5071)
+TTHnobb_fxfx = kreator.makeMCComponent("TTHnobb_fxfx", "/ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1//NANOAODSIM", "CMS", ".*root", 0.5071*(1-0.582), fracNegWeights=0.344)
+TTHnobb_pow = kreator.makeMCComponent("TTHnobb_pow", "/ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM", "CMS", ".*root", 0.5071*(1-0.582))
+TTHtautau_pow = kreator.makeMCComponent("TTHtautau_pow", "/ttHToTauTau_M125_TuneCP5_13TeV-powheg-pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM", "CMS", ".*root", 0.5071*0.06272)
 
-TZQToLL  = kreator.makeMCComponent("TZQToLL","/tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/RunIIFall17NanoAODv4-PU2017_12Apr2018_Nano14Dec2018_new_pmx_102X_mc2017_realistic_v6-v1/NANOAODSIM", "CMS", ".*root", 0.07358, fracNegWeights=0.367)
+TZQToLL  = kreator.makeMCComponent("TZQToLL","/tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/RunIIAutumn18NanoAODv7-Nano02Apr2020_102X_upgrade2018_realistic_v21-v1/NANOAODSIM", "CMS", ".*root", 0.07358, fracNegWeights=0.367)
 #tWll  = kreator.makeMCComponent("tWll","/ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8/-FIXME-MISSING-/NANOAODSIM", "CMS", ".*root", 0.01123) 
 
 # These are the inverted coupling cross sections, i.e. cf = -1.0, cv = 1.0 (see https://twiki.cern.ch/twiki/bin/viewauth/CMS/SingleTopHiggsGeneration13TeV), which is the default weight configuration. Apply LHE event weights to recover other cases including the SM.
